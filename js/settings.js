@@ -120,12 +120,65 @@ class SettingsManager {
 
     // Załaduj status powiadomień
     this.loadNotificationSettings();
+    
+    // Załaduj aktualną wersję aplikacji
+    this.loadAppVersion();
+  }
+
+  // Pobierz wersję aplikacji z manifest.json
+  async getAppVersion() {
+    try {
+      const response = await fetch('/manifest.json');
+      const manifest = await response.json();
+      return manifest.version || '1.0.0';
+    } catch (error) {
+      console.warn('[Settings] Nie udało się pobrać wersji z manifest.json:', error);
+      return '1.0.0';
+    }
+  }
+
+  // Załaduj wersję aplikacji z manifest.json
+  async loadAppVersion() {
+    const appVersion = await this.getAppVersion();
+    
+    const versionElement = document.querySelector('[data-i18n="settings.version"]');
+    if (versionElement) {
+      // Usuń atrybut data-i18n żeby nie był nadpisywany przez automatyczne tłumaczenia
+      versionElement.removeAttribute('data-i18n');
+      
+      // Zaktualizuj tekst z parametrem wersji
+      const versionText = window.i18n ? 
+        window.i18n.t('settings.version', { version: appVersion }) : 
+        `Wersja ${appVersion}`;
+      
+      versionElement.textContent = versionText;
+      
+      // Ustaw atrybut data dla przyszłych aktualizacji
+      versionElement.setAttribute('data-version', appVersion);
+    }
   }
 
   changeLanguage(language) {
     if (window.i18n) {
       window.i18n.setLanguage(language);
       this.showSuccessMessage(t('settings.languageChanged', { language }));
+      
+      // Zaktualizuj wersję po zmianie języka
+      setTimeout(() => {
+        this.updateVersionAfterLanguageChange();
+      }, 100);
+    }
+  }
+
+  // Zaktualizuj wyświetlanie wersji po zmianie języka
+  updateVersionAfterLanguageChange() {
+    const versionElement = document.querySelector('[data-version]');
+    if (versionElement) {
+      const appVersion = versionElement.getAttribute('data-version');
+      if (appVersion && window.i18n) {
+        const versionText = window.i18n.t('settings.version', { version: appVersion });
+        versionElement.textContent = versionText;
+      }
     }
   }
 
@@ -208,8 +261,10 @@ class SettingsManager {
     }
   }
 
-  exportUserData() {
+  async exportUserData() {
     try {
+      const appVersion = await this.getAppVersion();
+
       const data = {
         events: JSON.parse(localStorage.getItem('fete-lite-events') || '[]'),
         settings: {
@@ -218,7 +273,7 @@ class SettingsManager {
           notifications: localStorage.getItem('notifications-enabled')
         },
         exportDate: new Date().toISOString(),
-        version: '1.0.0'
+        version: appVersion
       };
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });

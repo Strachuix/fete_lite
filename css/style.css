@@ -1433,6 +1433,11 @@ header:not(.uniform-header)::after {
     flex-direction: column;
     text-align: center;
   }
+  
+  /* Ukryj etykiety w dolnej nawigacji (mobile) */
+  .bottom-nav .nav-label {
+    display: none !important;
+  }
 }
 
 @media (min-width: 1400px) {
@@ -1486,6 +1491,8 @@ header:not(.uniform-header)::after {
   line-height: 1.2;
   /* Zapewniamy stałą wysokość */
   min-height: 14px;
+  /* Domyślnie pokaż etykiety (dla compatibility) */
+  display: block;
 }
 
 /* Większe ikony i etykiety dla pionowej nawigacji */
@@ -1497,6 +1504,7 @@ header:not(.uniform-header)::after {
   }
   
   .nav-label {
+    display: block; /* Pokaż etykiety w sidebar (desktop) */
     font-size: var(--font-size-base);
     text-align: left;
     min-height: auto;

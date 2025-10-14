@@ -39,15 +39,19 @@ class NavigationManager {
       <nav class="bottom-nav" role="navigation" aria-label="Główna nawigacja">
         <a href="/" class="nav-item ${this.currentPage === 'home' ? 'active' : ''}" data-page="home">
           <span class="nav-icon">🏠</span>
+          <span class="nav-label" data-i18n="nav.home">Strona główna</span>
         </a>
         <a href="/create-event.html" class="nav-item ${this.currentPage === 'create' ? 'active' : ''}" data-page="create">
           <span class="nav-icon">➕</span>
+          <span class="nav-label" data-i18n="nav.create">Utwórz</span>
         </a>
         <a href="/settings.html" class="nav-item ${this.currentPage === 'settings' ? 'active' : ''}" data-page="settings">
           <span class="nav-icon">⚙️</span>
+          <span class="nav-label" data-i18n="nav.settings">Ustawienia</span>
         </a>
         <a href="/auth.html" class="nav-item ${this.currentPage === 'auth' ? 'active' : ''}" data-page="auth">
           <span class="nav-icon">👤</span>
+          <span class="nav-label" data-i18n="nav.login">Logowanie</span>
         </a>
       </nav>
     `;
