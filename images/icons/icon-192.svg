@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#673ab7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9c27b0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Tło z zaokrąglonymi rogami -->
+  <rect width="192" height="192" rx="30" fill="url(#grad1)"/>
+  
+  <!-- Ikona - dwa kieliszki -->
+  <g transform="translate(96, 96)">
+    <!-- Kieliszek lewy -->
+    <g transform="rotate(-15) translate(-25, 0)">
+      <ellipse cx="0" cy="-30" rx="12" ry="8" fill="white" opacity="0.9"/>
+      <rect x="-12" y="-38" width="24" height="50" rx="4" fill="white" opacity="0.9"/>
+      <rect x="-4" y="12" width="8" height="20" fill="white" opacity="0.9"/>
+      <circle cx="0" cy="32" r="6" fill="white" opacity="0.9"/>
+    </g>
+    
+    <!-- Kieliszek prawy -->
+    <g transform="rotate(15) translate(25, 0)">
+      <ellipse cx="0" cy="-30" rx="12" ry="8" fill="white" opacity="0.9"/>
+      <rect x="-12" y="-38" width="24" height="50" rx="4" fill="white" opacity="0.9"/>
+      <rect x="-4" y="12" width="8" height="20" fill="white" opacity="0.9"/>
+      <circle cx="0" cy="32" r="6" fill="white" opacity="0.9"/>
+    </g>
+    
+    <!-- Iskierki celebracji -->
+    <circle cx="-10" cy="-50" r="2" fill="#FFD700" opacity="0.8"/>
+    <circle cx="15" cy="-55" r="1.5" fill="#FFD700" opacity="0.8"/>
+    <circle cx="0" cy="-60" r="2" fill="#FFD700" opacity="0.8"/>
+    <circle cx="-20" cy="-45" r="1" fill="#FFD700" opacity="0.8"/>
+    <circle cx="25" cy="-48" r="1" fill="#FFD700" opacity="0.8"/>
+  </g>
+  
+  <!-- Tekst FETE -->
+  <text x="96" y="170" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" opacity="0.9">FETE</text>
+</svg>

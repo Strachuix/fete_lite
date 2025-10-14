@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#673ab7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9c27b0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Tło z zaokrąglonymi rogami -->
+  <rect width="512" height="512" rx="80" fill="url(#grad2)"/>
+  
+  <!-- Ikona - dwa kieliszki -->
+  <g transform="translate(256, 256)">
+    <!-- Kieliszek lewy -->
+    <g transform="rotate(-12) translate(-60, 0)">
+      <ellipse cx="0" cy="-80" rx="30" ry="20" fill="white" opacity="0.9"/>
+      <rect x="-30" y="-100" width="60" height="130" rx="10" fill="white" opacity="0.9"/>
+      <rect x="-12" y="30" width="24" height="50" fill="white" opacity="0.9"/>
+      <circle cx="0" cy="80" r="18" fill="white" opacity="0.9"/>
+    </g>
+    
+    <!-- Kieliszek prawy -->
+    <g transform="rotate(12) translate(60, 0)">
+      <ellipse cx="0" cy="-80" rx="30" ry="20" fill="white" opacity="0.9"/>
+      <rect x="-30" y="-100" width="60" height="130" rx="10" fill="white" opacity="0.9"/>
+      <rect x="-12" y="30" width="24" height="50" fill="white" opacity="0.9"/>
+      <circle cx="0" cy="80" r="18" fill="white" opacity="0.9"/>
+    </g>
+    
+    <!-- Iskierki celebracji -->
+    <circle cx="-25" cy="-140" r="4" fill="#FFD700" opacity="0.8"/>
+    <circle cx="35" cy="-145" r="3" fill="#FFD700" opacity="0.8"/>
+    <circle cx="0" cy="-155" r="3.5" fill="#FFD700" opacity="0.8"/>
+    <circle cx="-45" cy="-125" r="2.5" fill="#FFD700" opacity="0.8"/>
+    <circle cx="50" cy="-130" r="2.5" fill="#FFD700" opacity="0.8"/>
+    <circle cx="-10" cy="-165" r="2" fill="#FFD700" opacity="0.8"/>
+    <circle cx="20" cy="-160" r="2" fill="#FFD700" opacity="0.8"/>
+  </g>
+  
+  <!-- Tekst FETE -->
+  <text x="256" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" opacity="0.9">FETE</text>
+</svg>

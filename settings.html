@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="description" content="Ustawienia konta - Fete Lite">
+    <meta name="theme-color" content="#673ab7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    
+    <title>Ustawienia - Fete Lite</title>
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Ikony -->
+    <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modern-effects.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <!-- Komunikat offline -->
+    <div id="offline-banner" class="offline-banner" style="display: none;">
+        <span data-i18n="offline.message">🔌 Brak połączenia - pracujesz w trybie offline</span>
+        <button id="offline-close" aria-label="Zamknij komunikat">&times;</button>
+    </div>
+    
+    <!-- Nagłówek - zarządzany przez header.js -->
+    <header></header>
+    
+    <!-- Główna zawartość -->
+    <main class="main-content">
+        <div class="settings-container">
+            <!-- Profil użytkownika -->
+            <section class="settings-section glass slide-in-up">
+                <div class="section-header">
+                    <h2 data-i18n="settings.profile">Profil użytkownika</h2>
+                    <span class="section-icon">👤</span>
+                </div>
+                
+                <div class="profile-info">
+                    <div class="avatar-section">
+                        <div class="avatar">🎉</div>
+                        <div class="profile-details">
+                            <h3 data-i18n="settings.welcomeUser">Event Organizer</h3>
+                            <p data-i18n="settings.memberSince">Członek od października 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ustawienia aplikacji -->
+            <section class="settings-section glass slide-in-up stagger-item">
+                <div class="section-header">
+                    <h2 data-i18n="settings.appSettings">Ustawienia aplikacji</h2>
+                    <span class="section-icon">⚙️</span>
+                </div>
+                
+                <div class="settings-list">
+                    <!-- Język -->
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">🌐</div>
+                            <div class="setting-details">
+                                <h3 data-i18n="settings.language">Język</h3>
+                                <p data-i18n="settings.languageDesc">Wybierz język interfejsu</p>
+                            </div>
+                        </div>
+                        <div class="setting-control">
+                            <select id="language-selector" class="setting-select" aria-label="Wybierz język">
+                                <option value="pl">🇵🇱 Polski</option>
+                                <option value="en">🇬🇧 English</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Motyw -->
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">🎨</div>
+                            <div class="setting-details">
+                                <h3 data-i18n="settings.theme">Motyw</h3>
+                                <p data-i18n="settings.themeDesc">Personalizuj wygląd aplikacji</p>
+                            </div>
+                        </div>
+                        <div class="setting-control">
+                            <div class="theme-options">
+                                <button class="theme-option" data-theme="light" aria-label="Jasny motyw">
+                                    <span class="theme-preview light-preview"></span>
+                                    <span data-i18n="settings.lightTheme">Jasny</span>
+                                </button>
+                                <button class="theme-option" data-theme="dark" aria-label="Ciemny motyw">
+                                    <span class="theme-preview dark-preview"></span>
+                                    <span data-i18n="settings.darkTheme">Ciemny</span>
+                                </button>
+                                <button class="theme-option" data-theme="auto" aria-label="Automatyczny motyw">
+                                    <span class="theme-preview auto-preview"></span>
+                                    <span data-i18n="settings.autoTheme">Auto</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Powiadomienia -->
+            <section class="settings-section glass slide-in-up stagger-item">
+                <div class="section-header">
+                    <h2 data-i18n="settings.notifications">Powiadomienia</h2>
+                    <span class="section-icon">🔔</span>
+                </div>
+                
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-icon">📱</div>
+                            <div class="setting-details">
+                                <h3 data-i18n="settings.pushNotifications">Powiadomienia push</h3>
+                                <p data-i18n="settings.pushDesc">Otrzymuj przypomnienia o wydarzeniach</p>
+                            </div>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="notifications-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dane i prywatność -->
+            <section class="settings-section glass slide-in-up stagger-item">
+                <div class="section-header">
+                    <h2 data-i18n="settings.dataPrivacy">Dane i prywatność</h2>
+                    <span class="section-icon">🔒</span>
+                </div>
+                
+                <div class="settings-list">
+                    <div class="setting-item clickable" id="export-data">
+                        <div class="setting-info">
+                            <div class="setting-icon">📤</div>
+                            <div class="setting-details">
+                                <h3 data-i18n="settings.exportData">Eksportuj dane</h3>
+                                <p data-i18n="settings.exportDesc">Pobierz kopię swoich wydarzeń</p>
+                            </div>
+                        </div>
+                        <div class="setting-control">
+                            <span class="setting-arrow">›</span>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item clickable" id="clear-data">
+                        <div class="setting-info">
+                            <div class="setting-icon">🗑️</div>
+                            <div class="setting-details">
+                                <h3 data-i18n="settings.clearData">Wyczyść dane</h3>
+                                <p data-i18n="settings.clearDesc">Usuń wszystkie wydarzenia i ustawienia</p>
+                            </div>
+                        </div>
+                        <div class="setting-control">
+                            <span class="setting-arrow">›</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Informacje o aplikacji -->
+            <section class="settings-section glass slide-in-up stagger-item">
+                <div class="section-header">
+                    <h2 data-i18n="settings.about">O aplikacji</h2>
+                    <span class="section-icon">ℹ️</span>
+                </div>
+                
+                <div class="app-info">
+                    <div class="app-logo">🎉</div>
+                    <h3>Fete Lite</h3>
+                    <p data-i18n="settings.version">Wersja 1.0.0</p>
+                    <p data-i18n="settings.description">Organizuj wydarzenia towarzyskie szybko i prosto</p>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Nawigacja - zarządzana przez navigation.js -->
+    <div id="navigation-container"></div>
+    
+    <!-- JavaScript -->
+    <script src="/js/i18n.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/geolocation.js"></script>
+    <script src="/js/events.js"></script>
+    <script src="/js/qr.js"></script>
+    <script src="/js/ics-export.js"></script>
+    <script src="/js/darkmode.js"></script>
+    <script src="/js/network.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/sample-data.js"></script>
+    <script src="/js/navigation.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/settings.js"></script>
+    <script src="/js/modern-effects.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

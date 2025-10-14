@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="description" content="Szczegóły wydarzenia w Fete Lite">
+    <meta name="theme-color" content="#673ab7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    
+    <title>Szczegóły wydarzenia - Fete Lite</title>
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Ikony -->
+    <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+    <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/modern-effects.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Leaflet CSS dla map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    
+    <!-- QR Code library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Leaflet JS dla map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <!-- Komunikat offline -->
+    <div id="offline-banner" class="offline-banner" style="display: none;">
+        <span data-i18n="offline.message">🔌 Brak połączenia - pracujesz w trybie offline</span>
+        <button id="offline-close" aria-label="Zamknij komunikat">&times;</button>
+    </div>
+    
+    <!-- Nagłówek - zarządzany przez header.js -->
+    <header></header>
+    
+    <!-- Główna zawartość -->
+    <main class="main-content">
+        <!-- Loading state -->
+        <div id="loading-state" class="loading-state">
+            <div class="spinner"></div>
+            <p data-i18n="loading.event">Ładowanie wydarzenia...</p>
+        </div>
+        
+        <!-- Error state -->
+        <div id="error-state" class="error-state" style="display: none;">
+            <div class="error-icon">❌</div>
+            <h2 data-i18n="error.eventNotFound">Wydarzenie nie znalezione</h2>
+            <p data-i18n="error.eventNotFoundDesc">Wydarzenie mogło zostać usunięte lub nie istnieje.</p>
+            <a href="/" class="btn btn-primary" data-i18n="error.backToHome">Wróć do strony głównej</a>
+        </div>
+        
+        <!-- Szczegóły wydarzenia -->
+        <div id="event-details-container" class="event-details-container" style="display: none;">
+            <!-- Sekcja główna -->
+            <section class="event-hero">
+                <div class="event-hero-content">
+                    <div class="event-date-badge">
+                        <span id="event-day" class="event-day"></span>
+                        <span id="event-month" class="event-month"></span>
+                    </div>
+                    
+                    <div class="event-main-info">
+                        <h2 id="event-title" class="event-title"></h2>
+                        <div class="event-meta">
+                            <div class="event-time">
+                                <span class="meta-icon">⏰</span>
+                                <span id="event-time-text"></span>
+                            </div>
+                            <div class="event-location-info" id="event-location-info" style="display: none;">
+                                <span class="meta-icon">📍</span>
+                                <span id="event-location-text"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Opis wydarzenia -->
+            <section class="event-description-section" id="event-description-section" style="display: none;">
+                <h3 data-i18n="details.description">Opis</h3>
+                <p id="event-description" class="event-description"></p>
+            </section>
+            
+            <!-- Opcje dodatkowe -->
+            <section class="event-options-section" id="event-options-section" style="display: none;">
+                <h3 data-i18n="details.features">Co będzie na wydarzeniu</h3>
+                <div id="event-options" class="event-options-list"></div>
+            </section>
+            
+            <!-- Mapa lokalizacji -->
+            <section class="event-map-section" id="event-map-section" style="display: none;">
+                <h3 data-i18n="details.location">Lokalizacja</h3>
+                <div id="event-map" class="event-map"></div>
+                <div class="map-actions">
+                    <button id="show-directions-btn" class="btn btn-secondary">
+                        <span data-i18n="details.getDirections">Pokaż dojazd</span>
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Przyciski akcji -->
+            <section class="event-actions-section">
+                <div class="action-buttons">
+                    <button id="export-calendar-btn" class="btn btn-primary btn-action">
+                        <span class="btn-icon">📅</span>
+                        <span data-i18n="details.exportCalendar">Eksportuj do kalendarza</span>
+                    </button>
+                    
+                    <button id="show-qr-btn" class="btn btn-secondary btn-action">
+                        <span class="btn-icon">📱</span>
+                        <span data-i18n="details.showQR">Pokaż kod QR</span>
+                    </button>
+                    
+                    <button id="edit-event-btn" class="btn btn-secondary btn-action">
+                        <span class="btn-icon">✏️</span>
+                        <span data-i18n="details.editEvent">Edytuj wydarzenie</span>
+                    </button>
+                </div>
+                
+                <div class="danger-actions">
+                    <button id="delete-event-btn" class="btn btn-danger btn-small">
+                        <span data-i18n="details.deleteEvent">Usuń wydarzenie</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Modal QR Code -->
+    <div id="qr-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="details.shareTitle">Udostępnij wydarzenie</h3>
+                <button class="modal-close" aria-label="Zamknij">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="qr-display">
+                    <div id="qr-code-container" class="qr-code-container"></div>
+                    <p class="qr-description" data-i18n="details.qrDescription">
+                        Zeskanuj ten kod QR aby udostępnić wydarzenie
+                    </p>
+                    <div class="share-url">
+                        <input type="text" id="share-url-input" class="form-input" readonly>
+                        <button id="copy-url-btn" class="btn btn-secondary btn-small">
+                            <span data-i18n="details.copyLink">Kopiuj link</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal potwierdzenia usunięcia -->
+    <div id="delete-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header danger">
+                <div class="warning-icon">⚠️</div>
+                <h3 data-i18n="details.confirmDelete">Potwierdź usunięcie</h3>
+            </div>
+            <div class="modal-body">
+                <p data-i18n="details.deleteWarning">
+                    Czy na pewno chcesz usunąć to wydarzenie? Tej operacji nie można cofnąć.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close" data-i18n="details.cancel">
+                    Anuluj
+                </button>
+                <button id="confirm-delete-btn" class="btn btn-danger">
+                    <span data-i18n="details.confirmDeleteBtn">Tak, usuń wydarzenie</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal edycji (placeholder) -->
+    <div id="edit-modal" class="modal modal-large" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="details.editTitle">Edytuj wydarzenie</h3>
+                <button class="modal-close" aria-label="Zamknij">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p data-i18n="details.editComingSoon">
+                    Funkcja edycji wydarzeń będzie dostępna wkrótce.
+                </p>
+                <p data-i18n="details.editWorkaround">
+                    Na razie możesz utworzyć nowe wydarzenie z podobnymi danymi.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close" data-i18n="details.close">
+                    Zamknij
+                </button>
+                <a href="/create-event.html" class="btn btn-primary">
+                    <span data-i18n="details.createNew">Utwórz nowe</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Template dla opcji wydarzenia -->
+    <template id="event-option-template">
+        <div class="event-option">
+            <span class="option-icon"></span>
+            <span class="option-label"></span>
+        </div>
+    </template>
+    
+    <!-- Nawigacja - zarządzana przez navigation.js -->
+    <div id="navigation-container"></div>
+    
+    <!-- Skrypty -->
+    <script src="/js/i18n.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/geolocation.js"></script>
+    <script src="/js/events.js"></script>
+    <script src="/js/qr.js"></script>
+    <script src="/js/ics-export.js"></script>
+    <script src="/js/darkmode.js"></script>
+    <script src="/js/network.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/sample-data.js"></script>
+    <script src="/js/settings.js"></script>
+    <script src="/js/modern-effects.js"></script>
+    <script src="/js/navigation.js"></script>
+    <script src="/js/header.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/event-details.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="64" fill="#673ab7"/>
+  <g fill="white">
+    <!-- Kalendarz -->
+    <rect x="128" y="96" width="256" height="320" rx="16" fill="white"/>
+    <rect x="144" y="112" width="224" height="48" rx="8" fill="#673ab7"/>
+    <rect x="144" y="192" width="224" height="192" rx="8" fill="#f5f5f5"/>
+    
+    <!-- Elementy kalendarza -->
+    <rect x="160" y="128" width="32" height="16" rx="4" fill="white"/>
+    <rect x="208" y="128" width="32" height="16" rx="4" fill="white"/>
+    <rect x="256" y="128" width="32" height="16" rx="4" fill="white"/>
+    <rect x="304" y="128" width="32" height="16" rx="4" fill="white"/>
+    
+    <!-- Ikonka wydarzenia -->
+    <circle cx="256" cy="288" r="48" fill="#673ab7"/>
+    <path d="M256 264 L280 312 L232 312 Z" fill="white"/>
+  </g>
+  
+  <!-- Dekoracyjne elementy -->
+  <circle cx="96" cy="96" r="16" fill="rgba(255,255,255,0.2)"/>
+  <circle cx="416" cy="416" r="24" fill="rgba(255,255,255,0.1)"/>
+</svg>

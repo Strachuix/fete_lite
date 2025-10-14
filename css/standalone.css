@@ -1,0 +1,303 @@
+/* Fete Lite - Standalone Mode Enhancements */
+/* Dodatkowe style dla trybu standalone PWA */
+
+/* === STANDALONE MODE DETECTION === */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  
+  /* Globalne ustawienia dla trybu standalone */
+  html, body {
+    /* Ukryj scrollbary całkowicie tylko w standalone */
+    overflow-x: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  
+  /* Webkit scrollbary */
+  ::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+    background: transparent;
+  }
+  
+  /* Główny kontener aplikacji */
+  .app-container {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height */
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Nagłówek aplikacji w trybie standalone */
+  .main-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Dark mode support dla nagłówka */
+  @media (prefers-color-scheme: dark) {
+    .main-header {
+      background: rgba(0, 0, 0, 0.9);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  }
+  
+  /* Nawigacja w trybie standalone */
+  .bottom-navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    
+    /* Safe area support */
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Główna zawartość z paddingiem na nawigację */
+  .main-content {
+    padding-bottom: calc(80px + max(12px, env(safe-area-inset-bottom)));
+  }
+  
+  /* Przyciski w trybie standalone - większe touch targets */
+  button, .btn, a.btn {
+    min-height: 44px; /* Apple HIG recommendation */
+    min-width: 44px;
+  }
+  
+  /* Formularze w trybie standalone */
+  input, textarea, select {
+    /* Zapobieganie zoom na iOS */
+    font-size: max(16px, 1rem);
+  }
+  
+  /* Modalne w trybie standalone */
+  .modal {
+    /* Pełna wysokość bez scrollbarów */
+    height: 100vh;
+    height: 100dvh;
+  }
+  
+  .modal-content {
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    
+    /* Ukryj scrollbary w modalach */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .modal-content::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* === iOS SPECIFIC STANDALONE STYLES === */
+@media (display-mode: standalone) and (-webkit-touch-callout: none) {
+  
+  /* Status bar color handling */
+  body {
+    /* Gradient background to match status bar */
+    background: linear-gradient(to bottom, #673ab7 0px, #673ab7 env(safe-area-inset-top), transparent env(safe-area-inset-top));
+  }
+  
+  /* Header adjustments for iOS */
+  .main-header {
+    padding-top: max(20px, env(safe-area-inset-top));
+    margin-top: 0;
+  }
+  
+  /* iOS keyboard handling */
+  .modal-content,
+  .form-container {
+    /* Prevent zoom on input focus */
+    padding-bottom: 50px;
+  }
+  
+  /* iOS bounce disable */
+  .main-content,
+  .modal-content,
+  .events-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+  }
+}
+
+/* === ANDROID SPECIFIC STANDALONE STYLES === */
+@media (display-mode: standalone) and (not (-webkit-touch-callout: none)) {
+  
+  /* Android navigation bar handling */
+  .bottom-navigation {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  
+  /* Android keyboard adjustments */
+  .form-container {
+    padding-bottom: 20px;
+  }
+  
+  /* Android ripple effects enhancement */
+  button, .btn {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  button::before, .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+  }
+  
+  button:active::before, .btn:active::before {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+/* === DESKTOP PWA STYLES === */
+@media (display-mode: window-controls-overlay) {
+  
+  /* Desktop app region */
+  .main-header {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+  
+  /* Interactive elements in drag region */
+  .main-header button,
+  .main-header input,
+  .main-header select,
+  .main-header a {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+  
+  /* Window controls space */
+  .header-content {
+    padding-right: max(16px, env(titlebar-area-width, 100px));
+  }
+  
+  /* Desktop scrollbars - thin but visible */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* === FULLSCREEN MODE === */
+@media (display-mode: fullscreen) {
+  
+  /* True fullscreen - no system UI */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Fullscreen navigation */
+  .bottom-navigation {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+  }
+  
+  /* Emergency exit hint */
+  .fullscreen-hint {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 9999;
+    opacity: 0;
+    animation: hintFade 3s ease-in-out;
+  }
+  
+  @keyframes hintFade {
+    0%, 100% { opacity: 0; }
+    10%, 90% { opacity: 1; }
+  }
+}
+
+/* === RESPONSIVE STANDALONE ADJUSTMENTS === */
+
+/* Large phones */
+@media (display-mode: standalone) and (min-width: 414px) {
+  .modal-content {
+    max-width: 90vw;
+    margin: 0 auto;
+  }
+}
+
+/* Tablets in standalone */
+@media (display-mode: standalone) and (min-width: 768px) {
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+  }
+  
+  .bottom-navigation {
+    max-width: 1200px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* === ACCESSIBILITY IN STANDALONE === */
+@media (display-mode: standalone) and (prefers-reduced-motion: reduce) {
+  
+  /* Disable animations for users with motion sensitivity */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (display-mode: standalone) and (prefers-contrast: high) {
+  
+  /* High contrast mode */
+  .main-header,
+  .bottom-navigation {
+    background: #000000;
+    border-color: #ffffff;
+  }
+  
+  button, .btn {
+    border: 2px solid currentColor;
+  }
+}

@@ -1,0 +1,512 @@
+/* Fete Lite - Responsywność */
+/* Mobile-first approach z breakpointami */
+
+/* === BREAKPOINTY === */
+/* 
+   xs: 0px (mobile)
+   sm: 576px (large mobile)
+   md: 768px (tablet)
+   lg: 992px (desktop)
+   xl: 1200px (large desktop)
+*/
+
+/* === MOBILE FIRST (domyślne style) === */
+/* Wszystkie style w style.css są już mobile-first */
+
+/* === LARGE MOBILE === */
+@media (min-width: 576px) {
+  .container {
+    padding: 0 var(--space-6);
+  }
+  
+  .header-content {
+    padding: var(--space-5) var(--space-6);
+  }
+  
+  .main-content {
+    padding: var(--space-6);
+  }
+  
+  .form-container {
+    padding: 0 var(--space-4);
+  }
+  
+  .events-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  .modal {
+    padding: var(--space-6);
+  }
+  
+  .modal-content {
+    max-width: 400px;
+  }
+  
+  .bottom-nav {
+    padding: var(--space-3) var(--space-6);
+  }
+  
+  .nav-item,
+  .nav-button {
+    min-width: 72px;
+    padding: var(--space-3);
+  }
+}
+
+/* === TABLET === */
+@media (min-width: 768px) {
+  .main-content {
+    padding: var(--space-8);
+    padding-bottom: calc(var(--space-8) + 80px);
+  }
+  
+  .header-content {
+    padding: var(--space-6) var(--space-8);
+  }
+  
+  /* Formularze na tabletach */
+  .form-section {
+    padding: var(--space-8);
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+  
+  .checkbox-group {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+  }
+  
+  /* Events grid */
+  .events-container {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-8);
+  }
+  
+  /* Modal na tabletach */
+  .modal-content {
+    max-width: 600px;
+  }
+  
+  .modal-large {
+    max-width: 900px;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: var(--space-8);
+  }
+  
+  /* Nawigacja na tabletach */
+  .bottom-nav {
+    padding: var(--space-4) var(--space-8);
+  }
+  
+  .nav-item,
+  .nav-button {
+    min-width: 80px;
+    padding: var(--space-4);
+    gap: var(--space-2);
+  }
+  
+  .nav-icon {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .nav-label {
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Przyciski na tabletach */
+  .btn-large {
+    padding: var(--space-6) var(--space-10);
+    font-size: var(--font-size-xl);
+    min-height: 64px;
+  }
+  
+  /* Typography adjustments */
+  .event-title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .form-section h2 {
+    font-size: var(--font-size-2xl);
+  }
+  
+  /* Karta wydarzenia na tabletach */
+  .event-card-content {
+    padding: var(--space-6);
+  }
+  
+  .event-card-header {
+    padding: var(--space-5);
+  }
+  
+  .event-card-footer {
+    padding: 0 var(--space-6) var(--space-6);
+  }
+}
+
+/* === DESKTOP === */
+@media (min-width: 992px) {
+  .main-content {
+    padding: var(--space-10);
+    padding-bottom: calc(var(--space-10) + 80px);
+  }
+  
+  .header-content {
+    padding: var(--space-6) var(--space-10);
+  }
+  
+  /* Layout na desktopie */
+  .events-container {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--space-10);
+  }
+  
+  /* Formularze na desktopie */
+  .form-container {
+    max-width: 800px;
+  }
+  
+  .form-section {
+    padding: var(--space-10);
+  }
+  
+  .checkbox-group {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+  
+  /* Modal na desktopie */
+  .modal {
+    padding: var(--space-8);
+  }
+  
+  .modal-content {
+    max-width: 700px;
+  }
+  
+  .modal-large {
+    max-width: 1000px;
+  }
+  
+  /* Nawigacja może być bardziej widoczna */
+  .bottom-nav {
+    padding: var(--space-5) var(--space-10);
+  }
+  
+  .nav-item,
+  .nav-button {
+    min-width: 90px;
+    padding: var(--space-5);
+  }
+  
+  /* Hover effects są bardziej widoczne na desktopie */
+  .event-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  /* Szczegóły wydarzenia na desktopie */
+  .event-details-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .event-hero {
+    padding: var(--space-8);
+  }
+  
+  .event-description-section,
+  .event-options-section,
+  .event-map-section,
+  .event-actions-section {
+    padding: var(--space-6) var(--space-8);
+  }
+  
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+  }
+  
+  /* Mapa może być większa */
+  .event-map {
+    height: 300px;
+  }
+}
+
+/* === LARGE DESKTOP === */
+@media (min-width: 1200px) {
+  .main-content {
+    padding: var(--space-12);
+    padding-bottom: calc(var(--space-12) + 80px);
+  }
+  
+  .header-content {
+    padding: var(--space-8) var(--space-12);
+  }
+  
+  /* Events grid na dużych ekranach */
+  .events-container {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: var(--space-12);
+  }
+  
+  /* Formularz może być w dwóch kolumnach */
+  .form-container {
+    max-width: 1000px;
+  }
+  
+  .form-section {
+    padding: var(--space-12);
+  }
+  
+  /* Modal może być większy */
+  .modal-content {
+    max-width: 800px;
+  }
+  
+  .modal-large {
+    max-width: 1200px;
+  }
+  
+  /* Szczegóły wydarzenia w układzie dwukolumnowym */
+  .event-details-container {
+    max-width: 1000px;
+  }
+  
+  .event-hero-content {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-8);
+    align-items: center;
+  }
+  
+  .action-buttons {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* Mapa jeszcze większa */
+  .event-map {
+    height: 400px;
+  }
+}
+
+/* === LANDSCAPE ORIENTATION === */
+@media (orientation: landscape) and (max-height: 600px) {
+  /* Dostosowania dla urządzeń w poziomie (małe wysokości) */
+  .main-content {
+    padding-top: var(--space-4);
+    padding-bottom: calc(var(--space-4) + 70px);
+  }
+  
+  .modal-content {
+    max-height: 80vh;
+  }
+  
+  .form-section {
+    padding: var(--space-6);
+  }
+  
+  .event-hero {
+    padding: var(--space-6);
+  }
+  
+  /* Kompaktowa nawigacja */
+  .bottom-nav {
+    padding: var(--space-2) var(--space-4);
+  }
+  
+  .nav-item,
+  .nav-button {
+    padding: var(--space-2);
+    min-width: 60px;
+  }
+  
+  .nav-label {
+    display: none; /* Ukryj etykiety w landscape */
+  }
+}
+
+/* === PRINT STYLES === */
+@media print {
+  .main-header,
+  .page-header,
+  .bottom-nav,
+  .theme-toggle,
+  .modal,
+  .offline-banner {
+    display: none !important;
+  }
+  
+  .main-content {
+    padding: 0;
+    margin: 0;
+  }
+  
+  .event-card,
+  .form-section {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  .btn {
+    display: none;
+  }
+  
+  * {
+    color: black !important;
+    background: white !important;
+  }
+}
+
+/* === PREFERS REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .spinner {
+    animation: none;
+    border: 3px solid var(--color-border);
+    border-radius: 50%;
+  }
+  
+  .btn::before {
+    display: none;
+  }
+  
+  .event-card:hover,
+  .btn:hover {
+    transform: none;
+  }
+}
+
+/* === HIGH CONTRAST === */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000000;
+    --color-text-secondary: #000000;
+  }
+  
+  .btn {
+    border: 2px solid currentColor;
+  }
+  
+  .event-card {
+    border: 2px solid var(--color-border);
+  }
+  
+  .form-input,
+  .form-textarea,
+  .form-select {
+    border-width: 2px;
+  }
+}
+
+/* === SPECIFIC RESPONSIVE FIXES === */
+
+/* Touch targets - wszystkie interaktywne elementy min 44px */
+@media (pointer: coarse) {
+  .btn,
+  .nav-item,
+  .nav-button,
+  .event-action-btn,
+  .theme-toggle,
+  .modal-close {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .form-input,
+  .form-textarea,
+  .form-select {
+    min-height: 48px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .checkbox-label input[type="checkbox"] {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Hover states tylko dla urządzeń z precyzyjnym wskaźnikiem */
+@media (hover: hover) {
+  .event-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  
+  .nav-item:hover,
+  .nav-button:hover {
+    background: rgba(103, 58, 183, 0.1);
+  }
+}
+
+/* Dostosowania dla bardzo małych ekranów */
+@media (max-width: 320px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .events-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-content {
+    padding: var(--space-3);
+  }
+  
+  .main-content {
+    padding: var(--space-3);
+  }
+  
+  .modal {
+    padding: var(--space-2);
+  }
+}
+
+/* Dostosowania dla bardzo dużych ekranów */
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1400px;
+  }
+  
+  .events-container {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
+  
+  .form-container {
+    max-width: 1200px;
+  }
+  
+  .event-details-container {
+    max-width: 1200px;
+  }
+}

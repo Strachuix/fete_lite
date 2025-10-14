@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="description" content="Fete Lite - Lekka aplikacja PWA do organizowania wydarzeń towarzyskich">
+    <meta name="theme-color" content="#673ab7">
+    
+    <!-- PWA Meta Tags dla natywnego wyglądu -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fete Lite">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Fete Lite">
+    <meta name="msapplication-TileColor" content="#673ab7">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="color-scheme" content="light dark">
+    
+    <!-- Dodatkowe meta tagi dla ukrycia paska adresu -->
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="MobileOptimized" content="width">
+    <meta name="apple-mobile-web-app-oriented" content="portrait">
+    
+    <title>Fete Lite - Organizuj Wydarzenia</title>
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
+    
+    <!-- Ikony -->
+    <link rel="icon" type="image/svg+xml" href="./images/logo.svg">
+    <link rel="apple-touch-icon" href="./images/icons/icon-192.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/modern-effects.css">
+    <link rel="stylesheet" href="./css/responsive.css">
+    <link rel="stylesheet" href="./css/standalone.css">
+    <!-- dark-mode.css ładowany dynamicznie przez darkmode.js -->
+    
+    <!-- Preload krytycznych zasobów -->
+    <link rel="preload" href="./js/main.js" as="script">
+    <link rel="preload" href="./js/storage.js" as="script">
+</head>
+<body>
+    <!-- Komunikat offline -->
+    <div id="offline-banner" class="offline-banner" style="display: none;">
+        <span data-i18n="offline.message">🔌 Brak połączenia - pracujesz w trybie offline</span>
+        <button id="offline-close" aria-label="Zamknij komunikat">&times;</button>
+    </div>
+    
+    <!-- Główny nagłówek - zarządzany przez header.js -->
+    <header></header>
+    
+    <!-- Główna zawartość -->
+    <main class="main-content">
+        <!-- Sekcja powitalna -->
+        <section class="welcome-section glass slide-in-up">
+            <p data-i18n="home.description">Organizuj wydarzenia towarzyskie szybko i prosto</p>
+            
+            <div class="quick-actions">
+                <a href="./create-event.html" class="btn btn-primary btn-large hover-lift pulse-glow" id="create-event-btn">
+                    <span class="btn-icon">➕</span>
+                    <span data-i18n="home.createEvent">Utwórz wydarzenie</span>
+                </a>
+            </div>
+        </section>
+        
+        <!-- Lista wydarzeń -->
+        <section class="events-section">
+            <div class="section-header">
+                <h3 data-i18n="home.myEvents">Moje wydarzenia</h3>
+                <div class="events-filter">
+                    <select id="events-filter" aria-label="Filtruj wydarzenia">
+                        <option value="all" data-i18n="filter.all">Wszystkie</option>
+                        <option value="upcoming" data-i18n="filter.upcoming">Nadchodzące</option>
+                        <option value="past" data-i18n="filter.past">Przeszłe</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Kontener na wydarzenia -->
+            <div id="events-container" class="events-container stagger-container">
+                <!-- Wydarzenia będą ładowane dynamicznie przez JavaScript -->
+                <div class="loading-placeholder glass">
+                    <div class="loading-spinner"></div>
+                    <p data-i18n="loading.events">Ładowanie wydarzeń...</p>
+                </div>
+            </div>
+            
+            <!-- Komunikat o braku wydarzeń -->
+            <div id="no-events" class="no-events glass slide-in-up" style="display: none;">
+                <div class="no-events-illustration float-animation">📅</div>
+                <h4 data-i18n="home.noEvents">Brak wydarzeń</h4>
+                <p data-i18n="home.noEventsDesc">Utwórz swoje pierwsze wydarzenie i zacznij organizować spotkania!</p>
+                <a href="./create-event.html" class="btn btn-secondary hover-lift">
+                    <span data-i18n="home.createFirst">Utwórz pierwsze wydarzenie</span>
+                </a>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Nawigacja - zarządzana przez navigation.js -->
+    <div id="navigation-container"></div>
+    
+    <!-- Modal powiadomień -->
+    <div id="notifications-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="notifications.title">Powiadomienia</h3>
+                <button class="modal-close" aria-label="Zamknij">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="notifications-list" class="notifications-list">
+                    <p data-i18n="notifications.empty">Brak nowych powiadomień</p>
+                </div>
+                <div class="notifications-settings">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="notifications-enabled">
+                        <span data-i18n="notifications.enable">Włącz powiadomienia o wydarzeniach</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Template dla karty wydarzenia -->
+    <template id="event-card-template">
+        <article class="event-card stagger-item hover-lift interactive-card glass" data-event-id="">
+            <div class="event-card-header gradient-primary">
+                <div class="event-date">
+                    <span class="event-day"></span>
+                    <span class="event-month"></span>
+                </div>
+                <div class="event-actions">
+                    <button class="event-action-btn share-btn hover-glow" aria-label="Udostępnij wydarzenie">
+                        <span>🔗</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="event-card-content">
+                <h4 class="event-title"></h4>
+                <div class="event-details">
+                    <div class="event-time">
+                        <span class="event-icon">⏰</span>
+                        <span class="event-time-text"></span>
+                    </div>
+                    <div class="event-location">
+                        <span class="event-icon">📍</span>
+                        <span class="event-location-text"></span>
+                    </div>
+                </div>
+                <p class="event-description"></p>
+                
+                <div class="event-tags"></div>
+            </div>
+            
+            <div class="event-card-footer">
+                <button class="btn btn-secondary btn-small event-details-btn">
+                    <span data-i18n="home.viewDetails">Zobacz szczegóły</span>
+                </button>
+            </div>
+        </article>
+    </template>
+    
+    <!-- Skrypty -->
+    <script src="./js/i18n.js"></script>
+    <script src="./js/mobile-fullscreen.js"></script>
+    <script src="./js/storage.js"></script>
+    <script src="./js/events.js"></script>
+    <script src="./js/darkmode.js"></script>
+    <script src="./js/network.js"></script>
+    <script src="./js/notifications.js"></script>
+    <script src="./js/sample-data.js"></script>
+    <script src="./js/modern-effects.js"></script>
+    <script src="./js/navigation.js"></script>
+    <script src="./js/header.js"></script>
+    <script src="./js/update-checker.js"></script>
+    <script src="./js/main.js"></script>
+</body>
+</html>
