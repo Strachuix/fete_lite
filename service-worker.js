@@ -1,7 +1,7 @@
 // Service Worker dla Fete Lite PWA
 // Wersja 1.0.0
 
-const CACHE_VERSION = '1.0.11'
+const CACHE_VERSION = '1.0.12'
 const CACHE_NAME = `fete-lite-v${CACHE_VERSION}`;
 const STATIC_CACHE = `fete-lite-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `fete-lite-dynamic-v${CACHE_VERSION}`;
