@@ -3,7 +3,7 @@
 
 class UpdateChecker {
   constructor() {
-    this.currentVersion = '1.0.2'; // Aktualna wersja aplikacji
+    this.currentVersion = null; // Pobierana dynamicznie z manifest.json
     this.checkInterval = 5 * 60 * 1000; // 5 minut
     this.lastCheck = null;
     this.isChecking = false;
@@ -13,6 +13,9 @@ class UpdateChecker {
   }
 
   async init() {
+    // Pobierz aktualną wersję z lokalnego manifest.json
+    await this.loadCurrentVersion();
+    
     // Sprawdź od razu przy starcie (jeśli online)
     if (navigator.onLine) {
       await this.checkForUpdates();
@@ -28,9 +31,31 @@ class UpdateChecker {
     this.setupFocusListener();
   }
 
+  // Pobierz aktualną wersję z lokalnego manifest.json
+  async loadCurrentVersion() {
+    try {
+      const manifestResponse = await fetch('./manifest.json', {
+        method: 'GET',
+        cache: 'no-store' // Zawsze pobieraj z cache aplikacji
+      });
+
+      if (manifestResponse.ok) {
+        const manifest = await manifestResponse.json();
+        this.currentVersion = manifest.version || '1.0.0';
+        console.log('[UpdateChecker] Aktualna wersja aplikacji:', this.currentVersion);
+      } else {
+        console.warn('[UpdateChecker] Nie można pobrać manifestu, używam domyślnej wersji');
+        this.currentVersion = '1.0.0';
+      }
+    } catch (error) {
+      console.warn('[UpdateChecker] Błąd pobierania wersji z manifestu:', error);
+      this.currentVersion = '1.0.0';
+    }
+  }
+
   // Główna funkcja sprawdzania aktualizacji
   async checkForUpdates(showNotification = true) {
-    if (this.isChecking || !navigator.onLine) {
+    if (this.isChecking || !navigator.onLine || !this.currentVersion) {
       return false;
     }
 
@@ -41,6 +66,8 @@ class UpdateChecker {
       // Sprawdź wersję na serwerze
       const serverVersion = await this.getServerVersion();
       
+      console.log('[UpdateChecker] Porównanie wersji - aktualna:', this.currentVersion, 'serwer:', serverVersion);
+      
       if (this.isNewerVersion(serverVersion, this.currentVersion)) {
         this.updateAvailable = true;
         
@@ -50,7 +77,7 @@ class UpdateChecker {
         
         return true;
       } else {
-
+        console.log('[UpdateChecker] Aplikacja jest aktualna');
         this.updateAvailable = false;
         return false;
       }

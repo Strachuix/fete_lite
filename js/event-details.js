@@ -24,6 +24,7 @@ async function initEventDetails() {
         
         currentEvent = event;
         displayEventDetails(event);
+        checkOrganizerPermissions(event);
         hideLoadingState();
         
     } catch (error) {
@@ -332,4 +333,69 @@ async function deleteCurrentEvent() {
 function showDirections(coordinates) {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}`;
     window.open(url, '_blank');
+}
+
+// Sprawdź uprawnienia organizatora i dostosuj interfejs
+function checkOrganizerPermissions(event) {
+    const isOrganizer = window.storageManager && window.storageManager.isUserOrganizer(event.id);
+    
+    // Pobierz przycisk edycji, sekcję z niebezpiecznymi akcjami i action-buttons
+    const editBtn = document.getElementById('edit-event-btn');
+    const dangerActions = document.querySelector('.danger-actions');
+    const actionButtons = document.querySelector('.action-buttons');
+    
+    // Usuń przycisk edycji i całą sekcję danger-actions z DOM jeśli użytkownik nie jest organizatorem
+    if (!isOrganizer) {
+        if (editBtn) editBtn.remove();
+        if (dangerActions) {
+            dangerActions.remove();
+            // Usuń margines dolny z action-buttons gdy danger-actions są usunięte
+            if (actionButtons) actionButtons.classList.add('no-danger-margin');
+        }
+    }
+    
+    // Wyświetl informacje o organizatorze
+    displayOrganizerInfo(event);
+}
+
+// Wyświetl informacje o organizatorze wydarzenia
+function displayOrganizerInfo(event) {
+    if (!event.organizerName && !event.organizerId) {
+        return; // Brak informacji o organizatorze
+    }
+    
+    // Znajdź lub utwórz sekcję z informacjami o organizatorze
+    let organizerSection = document.getElementById('organizer-info-section');
+    
+    if (!organizerSection) {
+        // Utwórz sekcję jeśli nie istnieje
+        const descriptionSection = document.getElementById('event-description-section');
+        if (descriptionSection) {
+            organizerSection = document.createElement('div');
+            organizerSection.id = 'organizer-info-section';
+            organizerSection.className = 'event-info-section';
+            descriptionSection.parentNode.insertBefore(organizerSection, descriptionSection.nextSibling);
+        } else {
+            return;
+        }
+    }
+    
+    const isCurrentUserOrganizer = window.storageManager && window.storageManager.isUserOrganizer(event.id);
+    const organizerLabel = isCurrentUserOrganizer ? 'Ty jesteś organizatorem' : 'Organizator';
+    
+    organizerSection.innerHTML = `
+        <div class="section-header">
+            <i class="fas fa-user-tie"></i>
+            <h3>${organizerLabel}</h3>
+        </div>
+        <div class="organizer-info">
+            <div class="organizer-details">
+                <i class="fas fa-user-circle"></i>
+                <span class="organizer-name">${event.organizerName || event.organizerId}</span>
+            </div>
+            ${isCurrentUserOrganizer ? '<span class="badge badge-primary">Twoje wydarzenie</span>' : ''}
+        </div>
+    `;
+    
+    organizerSection.style.display = 'block';
 }

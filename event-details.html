@@ -12,6 +12,12 @@
     
     <title>Szczegóły wydarzenia - Fete Lite</title>
     
+    <!-- Performance optimizations -->
+    <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    
     <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json">
     
@@ -24,13 +30,14 @@
     <link rel="stylesheet" href="/css/modern-effects.css">
     <link rel="stylesheet" href="/css/responsive.css">
     
-    <!-- Leaflet CSS dla map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Leaflet CSS dla map - preload dla szybszego ładowania -->
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
     
-    <!-- QR Code library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <!-- Leaflet JS dla map -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- QR Code library - defer dla lepszej wydajności -->
+    <script defer src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- Leaflet JS dla map - defer, ładowane asynchronicznie -->
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <!-- Komunikat offline -->

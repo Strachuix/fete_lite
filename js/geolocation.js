@@ -7,8 +7,63 @@ class GeolocationManager {
     this.currentPosition = null;
     this.watchId = null;
     this.maps = new Map(); // Cache dla map Leaflet
-    
+    this.leafletLoaded = false;
+    this.leafletLoadingPromise = null;
+  }
 
+  // Lazy loading Leaflet - ładuje tylko gdy jest potrzebny
+  async ensureLeafletLoaded() {
+    // Jeśli już załadowany, zwróć od razu
+    if (typeof L !== 'undefined') {
+      this.leafletLoaded = true;
+      return Promise.resolve();
+    }
+
+    // Jeśli już trwa ładowanie, poczekaj na nie
+    if (this.leafletLoadingPromise) {
+      return this.leafletLoadingPromise;
+    }
+
+    // Rozpocznij ładowanie
+    this.leafletLoadingPromise = new Promise((resolve, reject) => {
+      // Sprawdź czy skrypty są już w DOM
+      const existingScript = document.querySelector('script[src*="leaflet"]');
+      if (existingScript) {
+        // Czekaj aż się załaduje
+        if (typeof L !== 'undefined') {
+          this.leafletLoaded = true;
+          resolve();
+        } else {
+          existingScript.addEventListener('load', () => {
+            this.leafletLoaded = true;
+            resolve();
+          });
+          existingScript.addEventListener('error', reject);
+        }
+        return;
+      }
+
+      // Załaduj CSS
+      const cssLink = document.createElement('link');
+      cssLink.rel = 'stylesheet';
+      cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(cssLink);
+
+      // Załaduj JS
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.async = true;
+      script.onload = () => {
+        this.leafletLoaded = true;
+        resolve();
+      };
+      script.onerror = () => {
+        reject(new Error('Failed to load Leaflet library'));
+      };
+      document.head.appendChild(script);
+    });
+
+    return this.leafletLoadingPromise;
   }
 
   // Bezpieczne użycie funkcji tłumaczenia
@@ -337,8 +392,11 @@ class GeolocationManager {
   // === MAPY LEAFLET ===
 
   // Utwórz mapę Leaflet
-  createMap(containerId, center, zoom = 15) {
+  async createMap(containerId, center, zoom = 15) {
     try {
+      // Upewnij się że Leaflet jest załadowany
+      await this.ensureLeafletLoaded();
+      
       // Sprawdź czy Leaflet jest załadowany
       if (typeof L === 'undefined') {
         console.error('[Geolocation] Leaflet library not loaded');
@@ -356,14 +414,32 @@ class GeolocationManager {
         return null;
       }
 
-      // Utwórz mapę
-      const map = L.map(containerId).setView([center.lat, center.lng], zoom);
+      // Utwórz mapę z optymalizacjami wydajności
+      const map = L.map(containerId, {
+        preferCanvas: true,  // Użyj Canvas zamiast SVG dla lepszej wydajności
+        zoomControl: true,
+        attributionControl: true,
+        fadeAnimation: false,  // Wyłącz animacje dla szybszego ładowania
+        zoomAnimation: true,
+        markerZoomAnimation: false
+      }).setView([center.lat, center.lng], zoom);
 
-      // Dodaj kafelki OpenStreetMap
+      // Dodaj kafelki OpenStreetMap z optymalizacjami
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
+        maxZoom: 19,
+        minZoom: 3,
+        updateWhenIdle: true,  // Ładuj kafelki tylko po zakończeniu ruchu
+        updateWhenZooming: false,  // Nie ładuj podczas zoomowania
+        keepBuffer: 2,  // Zmniejsz bufor kafelków
+        detectRetina: true,  // Automatyczna detekcja retina
+        crossOrigin: true
       }).addTo(map);
+
+      // Wymuś jeden render po załadowaniu
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
 
       // Zapisz mapę w cache
       this.maps.set(containerId, map);

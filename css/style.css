@@ -1256,6 +1256,11 @@ header:not(.uniform-header)::after {
   justify-content: center;
 }
 
+/* Usuń margines dolny z action-buttons gdy danger-actions są ukryte */
+.action-buttons.no-danger-margin {
+  margin-bottom: 0;
+}
+
 /* Responsywność dla szczegółów wydarzenia */
 @media (max-width: 768px) {
   .event-details-container {

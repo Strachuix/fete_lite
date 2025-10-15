@@ -1,7 +1,7 @@
 // Service Worker dla Fete Lite PWA
 // Wersja 1.0.0
 
-const CACHE_VERSION = '1.0.12'
+const CACHE_VERSION = '1.0.18'
 const CACHE_NAME = `fete-lite-v${CACHE_VERSION}`;
 const STATIC_CACHE = `fete-lite-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `fete-lite-dynamic-v${CACHE_VERSION}`;
@@ -16,7 +16,16 @@ const STATIC_FILES = [
   './event-details.html',
   './auth.html',
   './settings.html',
+  './css/core.css',
   './css/style.css',
+  './css/auth.css',
+  './css/settings.css',
+  './css/events-list.css',
+  './css/event-details.css',
+  './css/event-form.css',
+  './css/style-small.css',
+  './css/style-medium.css',
+  './css/style-large.css',
   './css/modern-effects.css',
   './css/dark-mode.css',
   './css/responsive.css',
@@ -42,6 +51,7 @@ const STATIC_FILES = [
   './js/update-checker.js',
   './js/create-event.js',
   './js/event-details.js',
+  './js/dynamic-css-loader.js',
   './images/logo.svg',
   './images/icons/icon-192.png',
   './images/icons/icon-512.png',

@@ -73,6 +73,15 @@ class StorageManager {
         eventData.id = this.generateEventId();
       }
 
+      // Dodaj organizatora (aktualnie zalogowany użytkownik)
+      if (!eventData.organizerId && window.authManager) {
+        const currentUser = window.authManager.getCurrentUser();
+        if (currentUser) {
+          eventData.organizerId = currentUser.id || currentUser.email;
+          eventData.organizerName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.email;
+        }
+      }
+
       // Dodaj timestamp utworzenia i modyfikacji
       const now = new Date().toISOString();
       if (!eventData.createdAt) {
@@ -416,6 +425,32 @@ class StorageManager {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Sprawdź czy użytkownik jest organizatorem wydarzenia
+  isUserOrganizer(eventId) {
+    if (!window.authManager || !window.authManager.isUserLoggedIn()) {
+      return false;
+    }
+
+    const event = this.getEvent(eventId);
+    if (!event || !event.organizerId) {
+      return false;
+    }
+
+    const currentUser = window.authManager.getCurrentUser();
+    if (!currentUser) {
+      return false;
+    }
+
+    const currentUserId = currentUser.id || currentUser.email;
+    return event.organizerId === currentUserId;
+  }
+
+  // Pobierz wydarzenia utworzone przez użytkownika
+  getUserEvents(userId) {
+    const allEvents = this.getAllEvents();
+    return allEvents.filter(event => event.organizerId === userId);
   }
 }
 
