@@ -107,6 +107,11 @@ function displayEventDetails(event) {
         }
     }
     
+    // Wyświetl kod zaproszenia jeśli istnieje
+    if (event.invitationCode) {
+        displayInvitationCode(event.invitationCode);
+    }
+    
     // Pokaż kontener szczegółów
     const detailsContainer = document.getElementById('event-details-container');
     if (detailsContainer) {
@@ -184,6 +189,25 @@ function displayEventOptions(options) {
     });
 }
 
+function displayInvitationCode(code) {
+    // Dodaj kod zaproszenia do metadanych wydarzenia
+    const eventMeta = document.querySelector('.event-meta');
+    if (!eventMeta) return;
+    
+    // Sprawdź czy kod już nie został dodany
+    if (eventMeta.querySelector('.event-invite-code')) return;
+    
+    const inviteCodeDiv = document.createElement('div');
+    inviteCodeDiv.className = 'event-invite-code';
+    inviteCodeDiv.innerHTML = `
+        <span class="meta-icon">🎫</span>
+        <span class="invite-code-label" data-i18n="details.inviteCode">Kod zaproszenia:</span>
+        <span class="invite-code-value">${code}</span>
+    `;
+    
+    eventMeta.appendChild(inviteCodeDiv);
+}
+
 function showEventMap(coordinates, locationName) {
     const mapContainer = document.getElementById('event-map');
     const mapSection = document.getElementById('event-map-section');
@@ -208,6 +232,14 @@ function showEventMap(coordinates, locationName) {
 }
 
 function initEventActionHandlers(event) {
+    // Skopiuj kod zaproszenia
+    const copyInviteCodeBtn = document.getElementById('copy-invite-code-btn');
+    if (copyInviteCodeBtn) {
+        copyInviteCodeBtn.addEventListener('click', async function() {
+            await copyInviteCode(event);
+        });
+    }
+    
     // Eksport do kalendarza
     const exportBtn = document.getElementById('export-calendar-btn');
     if (exportBtn) {
@@ -397,5 +429,58 @@ function displayOrganizerInfo(event) {
         </div>
     `;
     
-    organizerSection.style.display = 'block';
+        organizerSection.style.display = 'block';
+}
+
+// Skopiuj kod zaproszenia do schowka
+async function copyInviteCode(event) {
+    if (!event || !event.invitationCode) {
+        showNotification(window.t('details.noInviteCode') || 'Brak kodu zaproszenia', 'error');
+        return;
+    }
+    
+    const inviteCode = event.invitationCode;
+    const btn = document.getElementById('copy-invite-code-btn');
+    
+    try {
+        // Spróbuj użyć nowoczesnego API Clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(inviteCode);
+        } else {
+            // Fallback dla starszych przeglądarek
+            const textArea = document.createElement('textarea');
+            textArea.value = inviteCode;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+        
+        // Animacja sukcesu na przycisku
+        if (btn) {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="btn-icon">✅</span><span>Skopiowano!</span>';
+            btn.classList.add('success');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('success');
+            }, 2000);
+        }
+        
+        // Pokaż powiadomienie z kodem
+        showNotification(
+            `${window.t('details.inviteCodeCopied') || 'Skopiowano kod zaproszenia'}: ${inviteCode}`,
+            'success'
+        );
+        
+    } catch (error) {
+        console.error('[EventDetails] Error copying invite code:', error);
+        showNotification(
+            window.t('details.copyError') || 'Nie udało się skopiować kodu',
+            'error'
+        );
+    }
 }

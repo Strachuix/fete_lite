@@ -424,10 +424,11 @@ class GeolocationManager {
         markerZoomAnimation: false
       }).setView([center.lat, center.lng], zoom);
 
-      // Dodaj kafelki OpenStreetMap z optymalizacjami
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
+      // Dodaj kafelki Carto Voyager z optymalizacjami
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20,
         minZoom: 3,
         updateWhenIdle: true,  // Ładuj kafelki tylko po zakończeniu ruchu
         updateWhenZooming: false,  // Nie ładuj podczas zoomowania

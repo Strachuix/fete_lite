@@ -169,40 +169,27 @@ class NetworkManager {
 
   // Utwórz banner statusu offline
   createStatusBanner() {
-    this.statusBanner = document.createElement('div');
-    this.statusBanner.className = 'network-status-banner offline-banner';
-    this.statusBanner.innerHTML = `
-      <div class="banner-content">
-        <span class="banner-icon">📶</span>
-        <div class="banner-text">
-          <strong>${t('network.offline')}</strong>
-          <span class="banner-description">${t('network.offlineDescription')}</span>
-        </div>
-        <button class="banner-retry-btn" onclick="window.networkManager.retryConnection()">
-          ${t('network.retry')}
-        </button>
-        <button class="banner-close-btn" onclick="window.networkManager.hideOfflineBanner()">
-          ×
-        </button>
-      </div>
-    `;
-
-    // Dodaj style inline
-    Object.assign(this.statusBanner.style, {
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      right: '0',
-      background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-      color: 'white',
-      padding: '12px 16px',
-      zIndex: '9999',
-      transform: 'translateY(-100%)',
-      transition: 'transform 0.3s ease',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-    });
-
-    document.body.appendChild(this.statusBanner);
+    // Sprawdź czy banner już istnieje w HTML
+    this.statusBanner = document.getElementById('offline-banner');
+    
+    if (!this.statusBanner) {
+      // Utwórz banner jeśli nie istnieje
+      this.statusBanner = document.createElement('div');
+      this.statusBanner.id = 'offline-banner';
+      this.statusBanner.className = 'offline-banner';
+      this.statusBanner.style.display = 'none';
+      this.statusBanner.innerHTML = `
+        <span data-i18n="offline.message">🔌 Brak połączenia - pracujesz w trybie offline</span>
+        <button id="offline-close" aria-label="Zamknij komunikat">&times;</button>
+      `;
+      document.body.insertBefore(this.statusBanner, document.body.firstChild);
+    }
+    
+    // Dodaj event listener do przycisku zamknięcia
+    const closeBtn = this.statusBanner.querySelector('#offline-close, .banner-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.hideOfflineBanner());
+    }
   }
 
   // Utwórz wskaźniki statusu (wyłączone - używamy tylko bannera)
@@ -215,6 +202,7 @@ class NetworkManager {
   updateNetworkStatus() {
     // Zaktualizuj klasę body
     document.body.classList.toggle('network-offline', !this.isOnline);
+    document.body.classList.toggle('offline-mode', !this.isOnline);
     
     // Zaktualizuj meta theme-color dla offline
     if (!this.isOnline) {
@@ -225,18 +213,16 @@ class NetworkManager {
   // Pokaż banner offline
   showOfflineBanner() {
     if (this.statusBanner) {
-      this.statusBanner.style.transform = 'translateY(0)';
-      
-      // Dodaj padding-top do body żeby nie zakrywać zawartości
-      document.body.style.paddingTop = this.statusBanner.offsetHeight + 'px';
+      this.statusBanner.style.display = 'flex';
+      document.body.classList.add('offline-mode');
     }
   }
 
   // Ukryj banner offline
   hideOfflineBanner() {
     if (this.statusBanner) {
-      this.statusBanner.style.transform = 'translateY(-100%)';
-      document.body.style.paddingTop = '0';
+      this.statusBanner.style.display = 'none';
+      document.body.classList.remove('offline-mode');
     }
   }
 

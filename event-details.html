@@ -13,9 +13,9 @@
     <title>Szczegóły wydarzenia - Fete Lite</title>
     
     <!-- Performance optimizations -->
-    <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+    <link rel="dns-prefetch" href="https://basemaps.cartocdn.com">
     <link rel="dns-prefetch" href="https://unpkg.com">
-    <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     
     <!-- PWA manifest -->
@@ -117,6 +117,11 @@
             <!-- Przyciski akcji -->
             <section class="event-actions-section">
                 <div class="action-buttons">
+                    <button id="copy-invite-code-btn" class="btn btn-primary btn-action">
+                        <span class="btn-icon">🎫</span>
+                        <span data-i18n="details.copyInviteCode">Skopiuj kod zaproszenia</span>
+                    </button>
+                    
                     <button id="export-calendar-btn" class="btn btn-primary btn-action">
                         <span class="btn-icon">📅</span>
                         <span data-i18n="details.exportCalendar">Eksportuj do kalendarza</span>

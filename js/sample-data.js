@@ -15,6 +15,22 @@ class SampleDataManager {
 
   }
 
+  // Generuj unikalny 8-znakowy kod zaproszenia
+  generateSampleInviteCode(index) {
+    // Generuj deterministyczne kody dla przykładowych wydarzeń
+    const codes = [
+      'DEMO2024',  // Urodziny Ani
+      'JAZZ2024',  // Koncert Jazz
+      'TECH2024',  // Konferencja Tech
+      'WEDD2024',  // Ślub
+      'BBQ12024',  // BBQ
+      'FOTO2024',  // Warsztaty
+      'KINO2024',  // Kino pod gwiazdami
+      'PAST2024'   // Piknik (zakończony)
+    ];
+    return codes[index] || `DEMO${String(index).padStart(4, '0')}`;
+  }
+
   // Wygeneruj przykładowe wydarzenia
   generateSampleEvents() {
     const now = new Date();
@@ -28,6 +44,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Za 3 dni
         endDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(), // 4 godziny później
         options: ['food', 'drinks', 'music', 'games'],
+        organizerId: 'demo-user-1',
+        organizerName: 'Anna Kowalska',
+        invitationCode: this.generateSampleInviteCode(0),
         createdAt: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 dni temu
         updatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 dni temu
         isSample: true,
@@ -42,6 +61,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Za tydzień
         endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(), // 2 godziny później
         options: ['music'],
+        organizerId: 'demo-user-2',
+        organizerName: 'Jazz Club Warszawa',
+        invitationCode: this.generateSampleInviteCode(1),
         createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,
@@ -56,6 +78,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(), // Za 2 tygodnie
         endDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(), // 8 godzin później
         options: ['food', 'drinks', 'accommodation'],
+        organizerId: 'demo-user-3',
+        organizerName: 'Tech Events Sp. z o.o.',
+        invitationCode: this.generateSampleInviteCode(2),
         createdAt: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,
@@ -70,6 +95,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000).toISOString(), // Za 3 tygodnie
         endDate: new Date(now.getTime() + 22 * 24 * 60 * 60 * 1000).toISOString(), // Następnego dnia
         options: ['food', 'drinks', 'alcohol', 'music'],
+        organizerId: 'demo-user-4',
+        organizerName: 'Magda i Tomek',
+        invitationCode: this.generateSampleInviteCode(3),
         createdAt: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,
@@ -84,6 +112,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(), // Jutro
         endDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000).toISOString(), // 3 godziny później
         options: ['food', 'games', 'music'],
+        organizerId: 'demo-user-5',
+        organizerName: 'Piotr Nowak',
+        invitationCode: this.generateSampleInviteCode(4),
         createdAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,
@@ -98,6 +129,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(), // Za 5 dni
         endDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(), // 4 godziny później
         options: ['drinks'],
+        organizerId: 'demo-user-6',
+        organizerName: 'Fotograf Pro',
+        invitationCode: this.generateSampleInviteCode(5),
         createdAt: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,
@@ -112,6 +146,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString(), // Za 6 dni
         endDate: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000 + 2.5 * 60 * 60 * 1000).toISOString(), // 2.5 godziny później
         options: ['food'],
+        organizerId: 'demo-user-7',
+        organizerName: 'Kino Letnie',
+        invitationCode: this.generateSampleInviteCode(6),
         createdAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,
@@ -126,6 +163,9 @@ class SampleDataManager {
         startDate: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 dni temu
         endDate: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString(), // 4 godziny trwania
         options: ['food', 'drinks', 'games'],
+        organizerId: 'demo-user-8',
+        organizerName: 'Rodzina Wiśniewskich',
+        invitationCode: this.generateSampleInviteCode(7),
         createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         isSample: true,

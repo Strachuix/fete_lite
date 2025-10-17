@@ -30,6 +30,16 @@ class StorageManager {
     return 'event_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
+  // Generuj kod zaproszenia (8 znaków alfanumerycznych)
+  generateInvitationCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Bez podobnych znaków (0/O, 1/I)
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
+
   // Pobierz wszystkie wydarzenia
   getAllEvents() {
     try {
@@ -80,6 +90,11 @@ class StorageManager {
           eventData.organizerId = currentUser.id || currentUser.email;
           eventData.organizerName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.email;
         }
+      }
+
+      // Generuj kod zaproszenia jeśli nie istnieje
+      if (!eventData.invitationCode) {
+        eventData.invitationCode = this.generateInvitationCode();
       }
 
       // Dodaj timestamp utworzenia i modyfikacji

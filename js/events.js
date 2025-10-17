@@ -654,40 +654,16 @@ function showNotification(message, type = 'info', duration = 3000) {
   notification.className = `notification notification-${type}`;
   notification.textContent = message;
   
-  // Style inline (fallback gdyby CSS się nie załadował)
-  Object.assign(notification.style, {
-    position: 'fixed',
-    top: '20px',
-    right: '20px',
-    padding: '12px 20px',
-    borderRadius: '8px',
-    color: 'white',
-    fontWeight: '500',
-    zIndex: '9999',
-    transform: 'translateX(100%)',
-    transition: 'transform 0.3s ease'
-  });
-  
-  // Kolory dla różnych typów
-  const colors = {
-    success: '#4caf50',
-    error: '#f44336',
-    warning: '#ff9800',
-    info: '#2196f3'
-  };
-  
-  notification.style.backgroundColor = colors[type] || colors.info;
-  
   document.body.appendChild(notification);
   
   // Animacja wejścia
-  setTimeout(() => {
-    notification.style.transform = 'translateX(0)';
-  }, 10);
+  requestAnimationFrame(() => {
+    notification.classList.add('show');
+  });
   
   // Automatyczne usunięcie
   setTimeout(() => {
-    notification.style.transform = 'translateX(100%)';
+    notification.classList.remove('show');
     setTimeout(() => notification.remove(), 300);
   }, duration);
 }
