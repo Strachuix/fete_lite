@@ -47,8 +47,8 @@ class EventManager {
       accommodationAvailable: formData.get('accommodationAvailable') === 'on',
       accommodationInfo: formData.get('accommodationInfo')?.trim() || '',
       
-      // Opcje dodatkowe (zachowane dla kompatybilności)
-      options: [],
+      // Tematyka wydarzenia (pojedynczy wybór)
+      eventTheme: formData.get('eventTheme') || 'other',
       
       // Zdjęcia (będą dodane osobno)
       images: [],
@@ -61,10 +61,6 @@ class EventManager {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-
-    // Pobierz zaznaczone opcje
-    const optionInputs = document.querySelectorAll('input[name="options"]:checked');
-    event.options = Array.from(optionInputs).map(input => input.value);
 
     // Pobierz współrzędne jeśli są zapisane
     const coordinatesData = sessionStorage.getItem('currentEventCoordinates');
@@ -323,14 +319,20 @@ class EventManager {
     if (descriptionElement && event.description) {
       descriptionElement.textContent = event.description;
       descriptionElement.style.display = 'block';
+      
+      // Dodaj obsługę rozwijania opisu
+      descriptionElement.addEventListener('click', (e) => {
+        e.stopPropagation(); // Zapobiegnij przejściu do szczegółów
+        descriptionElement.classList.toggle('expanded');
+      });
     } else if (descriptionElement) {
       descriptionElement.style.display = 'none';
     }
     
-    // Tagi/opcje
+    // Tematyka wydarzenia
     const tagsContainer = card.querySelector('.event-tags');
-    if (tagsContainer && event.options && event.options.length > 0) {
-      this.displayEventTags(tagsContainer, event.options);
+    if (tagsContainer && event.eventTheme) {
+      this.displayEventTheme(tagsContainer, event.eventTheme);
     }
     
     // Event listeners
@@ -361,40 +363,38 @@ class EventManager {
     return cardElement;
   }
 
-  // Wyświetl tagi wydarzenia
-  displayEventTags(container, options) {
-    const tagConfig = {
-      food: { icon: '🍕', label: t('create.food') },
-      drinks: { icon: '🥤', label: t('create.drinks') },
-      alcohol: { icon: '🍺', label: t('create.alcohol') },
-      accommodation: { icon: '🏠', label: t('create.accommodation') },
-      music: { icon: '🎵', label: t('create.music') },
-      games: { icon: '🎮', label: t('create.games') }
+  // Wyświetl tematykę wydarzenia
+  displayEventTheme(container, theme) {
+    // Pobierz konfigurację z centralnego źródła
+    const themeConfig = window.EventThemes ? window.EventThemes.getThemeConfig() : {
+      birthday: { icon: '�', label: t('theme.birthday') },
+      bbq: { icon: '🔥', label: t('theme.bbq') },
+      boardgames: { icon: '�', label: t('theme.boardgames') },
+      bar: { icon: '�', label: t('theme.bar') },
+      integration: { icon: '🤝', label: t('theme.integration') },
+      karaoke: { icon: '�', label: t('theme.karaoke') },
+      cinema: { icon: '🎬', label: t('theme.cinema') },
+      museum: { icon: '🖼️', label: t('theme.museum') },
+      theater: { icon: '🎭', label: t('theme.theater') },
+      minigolf: { icon: '⛳', label: t('theme.minigolf') },
+      concert: { icon: '🎵', label: t('theme.concert') },
+      sport: { icon: '⚽', label: t('theme.sport') },
+      picnic: { icon: '🧺', label: t('theme.picnic') },
+      party: { icon: '🎉', label: t('theme.party') },
+      dance: { icon: '💃', label: t('theme.dance') },
+      other: { icon: '📅', label: t('theme.other') }
     };
 
     container.innerHTML = '';
     
-    options.slice(0, 3).forEach(option => { // Pokaż maksymalnie 3 tagi
-      const config = tagConfig[option];
-      if (config) {
-        const tag = document.createElement('div');
-        tag.className = 'event-tag';
-        tag.innerHTML = `
-          <span class="tag-icon">${config.icon}</span>
-          <span class="tag-label">${config.label}</span>
-        `;
-        container.appendChild(tag);
-      }
-    });
-    
-    // Pokaż "+" jeśli jest więcej tagów
-    const remainingCount = options.length - 3;
-    if (remainingCount > 0) {
-      const moreTag = document.createElement('div');
-      moreTag.className = 'event-tag event-tag-more';
-      moreTag.textContent = `+${remainingCount}`;
-      container.appendChild(moreTag);
-    }
+    const config = themeConfig[theme] || themeConfig.other;
+    const tag = document.createElement('div');
+    tag.className = 'event-tag event-tag-theme';
+    tag.innerHTML = `
+      <span class="tag-icon">${config.icon}</span>
+      <span class="tag-label">${config.label}</span>
+    `;
+    container.appendChild(tag);
   }
 
   // Formatuj czas wydarzenia

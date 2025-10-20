@@ -199,6 +199,8 @@ class SampleDataManager {
 
       // Dodaj nowe sample data
       let addedCount = 0;
+      console.log(`[SampleData] Próba załadowania ${this.sampleEvents.length} przykładowych wydarzeń`);
+      
       this.sampleEvents.forEach(event => {
         if (window.storageManager?.saveEvent(event)) {
           addedCount++;
@@ -211,7 +213,7 @@ class SampleDataManager {
       localStorage.setItem('sampleDataLoaded', 'true');
       localStorage.setItem('sampleDataTimestamp', new Date().toISOString());
 
-      console.log(`[SampleData] Loaded ${addedCount} sample events`);
+      console.log(`[SampleData] ✅ Załadowano ${addedCount} z ${this.sampleEvents.length} przykładowych wydarzeń`);
       
       // Powiadom aplikację o nowych danych
       this.notifyDataLoaded();
@@ -398,14 +400,15 @@ class SampleDataManager {
 
   // Automatycznie załaduj sample data przy pierwszym uruchomieniu
   autoLoadOnFirstRun() {
-    // Sprawdź czy to pierwsze uruchomienie aplikacji
-    const hasRunBefore = localStorage.getItem('appHasRun');
+    // Sprawdź czy są jakiekolwiek wydarzenia (sample lub user)
     const hasAnyEvents = (window.storageManager?.getAllEvents() || []).length > 0;
 
-    if (!hasRunBefore && !hasAnyEvents) {
-
+    // Jeśli nie ma żadnych wydarzeń, załaduj wszystkie 8 przykładowych
+    if (!hasAnyEvents) {
+      console.log('[SampleData] Brak wydarzeń - ładowanie wszystkich 8 przykładowych wydarzeń');
       this.loadSampleData();
-      localStorage.setItem('appHasRun', 'true');
+    } else {
+      console.log('[SampleData] Wydarzenia już istnieją w aplikacji');
     }
   }
 

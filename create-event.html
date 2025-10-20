@@ -282,20 +282,20 @@
                         
                         <div class="form-group">
                             <label for="organizer-blik" class="form-label" data-i18n="create.organizerBlik">
-                                Twój kod BLIK
+                                Twój numer telefonu (do BLIK)
                             </label>
                             <input 
-                                type="text" 
+                                type="tel" 
                                 id="organizer-blik" 
                                 name="organizerBlik"
                                 class="form-input" 
-                                maxlength="6"
-                                pattern="[0-9]{6}"
-                                placeholder="123456"
+                                maxlength="9"
+                                pattern="[0-9]{9}"
+                                placeholder="123456789"
                                 data-i18n-placeholder="create.blikPlaceholder"
                             >
                             <div class="form-help" data-i18n="create.blikHelp">
-                                Kod BLIK ułatwi uczestnikom wpłacanie składek
+                                Numer telefonu do płatności BLIK ułatwi uczestnikom wpłacanie składek
                             </div>
                         </div>
                     </div>
@@ -412,58 +412,17 @@
                     </div>
                 </section>
                 
-                <!-- Sekcja opcji dodatkowych -->
+                <!-- Sekcja tematyki wydarzenia -->
                 <section class="form-section">
-                    <h2 data-i18n="create.additionalOptions">Opcje dodatkowe</h2>
+                    <h2 data-i18n="create.eventTheme">Tematyka wydarzenia</h2>
                     
-                    <div class="checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="food">
-                            <span class="checkbox-text">
-                                <span class="checkbox-icon">🍕</span>
-                                <span data-i18n="create.food">Jedzenie</span>
-                            </span>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="create.selectTheme">
+                            Wybierz tematykę wydarzenia
                         </label>
-                        
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="drinks">
-                            <span class="checkbox-text">
-                                <span class="checkbox-icon">🥤</span>
-                                <span data-i18n="create.drinks">Napoje</span>
-                            </span>
-                        </label>
-                        
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="alcohol">
-                            <span class="checkbox-text">
-                                <span class="checkbox-icon">🍺</span>
-                                <span data-i18n="create.alcohol">Alkohol</span>
-                            </span>
-                        </label>
-                        
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="accommodation">
-                            <span class="checkbox-text">
-                                <span class="checkbox-icon">🏠</span>
-                                <span data-i18n="create.accommodation">Nocleg</span>
-                            </span>
-                        </label>
-                        
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="music">
-                            <span class="checkbox-text">
-                                <span class="checkbox-icon">🎵</span>
-                                <span data-i18n="create.music">Muzyka</span>
-                            </span>
-                        </label>
-                        
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="options" value="games">
-                            <span class="checkbox-text">
-                                <span class="checkbox-icon">🎮</span>
-                                <span data-i18n="create.games">Gry/Zabawy</span>
-                            </span>
-                        </label>
+                        <div class="theme-selection-grid" id="theme-selection-grid">
+                            <!-- Tematyki b�d� za�adowane dynamicznie z event-themes.js -->
+                        </div>
                     </div>
                 </section>
                 
@@ -642,6 +601,7 @@
     
     <!-- Skrypty -->
     <script src="/js/i18n.js"></script>
+    <script src="/js/event-themes.js"></script>
     <script src="/js/storage.js"></script>
     <script src="/js/geolocation.js"></script>
     <script src="/js/events.js"></script>

@@ -726,57 +726,11 @@ class FeteLiteApp {
       const events = window.storageManager.getAllEvents();
       
       if (events.length === 0) {
-      console.log('[App] Dodawanie przykładowych danych...');
-      
-      // Przykładowe wydarzenia - TYLKO DO DEMONSTRACJI
-      const sampleEvents = [
-        {
-          title: '🍕 Pizza Party u Marka',
-          description: 'Wspólne gotowanie pizzy i oglądanie filmów. Przyniesie każdy coś do picia!',
-          location: 'ul. Kwiatowa 15, Warszawa',
-          startDate: this.getDateInFuture(3, '19:00'),
-          endDate: this.getDateInFuture(3, '23:00'),
-          options: ['food', 'drinks'],
-          coordinates: { lat: 52.2297, lng: 21.0122 } // Warszawa (przykład)
-        },
-        {
-          title: '🎵 Koncert w parku',
-          description: 'Lokalne zespoły grają w plenerze. Wstęp wolny, zabierz koc!',
-          location: 'Park Łazienkowski, Warszawa',
-          startDate: this.getDateInFuture(7, '17:00'),
-          endDate: this.getDateInFuture(7, '21:00'),
-          options: ['music'],
-          coordinates: { lat: 52.2156, lng: 21.0351 }
-        },
-        {
-          title: '🏃‍♂️ Poranný jogging',
-          description: 'Wspólny bieg po parku. Tempo dostosowane do najwolniejszego uczestnika.',
-          location: 'Park Pole Mokotowskie',
-          startDate: this.getDateInFuture(2, '07:00'),
-          endDate: this.getDateInFuture(2, '08:30'),
-          options: [],
-          coordinates: { lat: 52.2022, lng: 21.0092 }
-        }
-      ];
-      
-      // Zapisz przykładowe wydarzenia
-      for (const eventData of sampleEvents) {
-        try {
-          await window.storageManager.saveEvent(eventData);
-        } catch (error) {
-          console.error('[App] Błąd dodawania przykładowego wydarzenia:', error);
-        }
+        console.log('[App] Brak wydarzeń - przykładowe dane zostaną załadowane przez SampleDataManager');
+        // SampleDataManager automatycznie załaduje wszystkie 8 przykładowych wydarzeń
       }
-      
-      console.log('[App] Dodano przykładowe wydarzenia');
-      
-      // Odśwież wyświetlanie
-      if (window.eventManager) {
-        await window.eventManager.loadAndDisplayEvents();
-      }
-    }
     } catch (error) {
-      console.error('[App] Błąd podczas dodawania przykładowych danych:', error);
+      console.error('[App] Błąd podczas sprawdzania przykładowych danych:', error);
     }
   }
 

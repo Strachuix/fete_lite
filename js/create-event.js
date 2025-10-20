@@ -29,6 +29,23 @@ function initCreateEventForm() {
     const descriptionTextarea = document.getElementById('event-description');
     const descriptionCounter = document.getElementById('description-counter');
     
+    // Wypełnij numer telefonu użytkownika jeśli jest dostępny
+    if (window.authManager && window.authManager.isUserLoggedIn()) {
+        const currentUser = window.authManager.getCurrentUser();
+        const blikInput = document.getElementById('organizer-blik');
+        
+        if (currentUser && currentUser.phone && blikInput && !blikInput.value) {
+            // Usuń wszystkie spacje i dodaj tylko cyfry
+            const phoneNumber = currentUser.phone.replace(/\s/g, '').replace(/\+48/, '');
+            blikInput.value = phoneNumber;
+        }
+    }
+    
+    // Załaduj tematyki dynamicznie
+    if (window.EventThemes) {
+        window.EventThemes.renderThemeOptions('#theme-selection-grid');
+    }
+    
     // Licznik znaków dla opisu
     descriptionTextarea.addEventListener('input', function() {
         const length = this.value.length;
