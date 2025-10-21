@@ -1,14 +1,14 @@
 # Backend folder - nie uwzględniać w repo
-backend/
+Fete_backend/
 
 # Pliki konfiguracji PHP (wrażliwe dane)
-backend/config/config.php
-backend/.env
-backend/database/*.sqlite
-backend/database/*.db
-backend/uploads/*
-backend/logs/*
-backend/vendor/
+Fete_backend/config/config.php
+Fete_backend/.env
+Fete_backend/database/*.sqlite
+Fete_backend/database/*.db
+Fete_backend/uploads/*
+Fete_backend/logs/*
+Fete_backend/vendor/
 
 # Node.js dependencies
 node_modules/
