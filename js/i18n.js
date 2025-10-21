@@ -54,15 +54,47 @@ class I18n {
         'home.noEvents': 'Brak wydarzeń',
         'home.noEventsDesc': 'Utwórz swoje pierwsze wydarzenie i zacznij organizować spotkania!',
         'home.createFirst': 'Utwórz pierwsze wydarzenie',
-        'home.viewDetails': 'Zobacz szczegóły',
+                        'home.viewDetails': 'View details',
+        
+        // Event countdown
+        'event.tomorrow': 'Tomorrow',
+        'event.inDays': 'In {{days}} days',
+        
+        // Search
+        
+        // Event countdown
+        'event.tomorrow': 'Jutro',
+        'event.inDays': 'Za {{days}} dni',
+        
+        // Search
         
         // Filtry
+        'filter.showFilters': 'Dodaj filtry',
+        'filter.hideFilters': 'Ukryj filtry',
+        'filter.timeLabel': 'Czas',
+        'filter.themeLabel': 'Tematyka',
+        'filter.sortLabel': 'Sortowanie',
         'filter.all': 'Wszystkie',
         'filter.upcoming': 'Nadchodzące',
         'filter.past': 'Przeszłe',
+        'filter.allThemes': 'Wszystkie tematy',
+        
+        // Sortowanie
+        'sort.dateAsc': 'Data: od najstarszych',
+        'sort.dateDesc': 'Data: od najnowszych',
+        'sort.titleAsc': 'Nazwa: A-Z',
+        'sort.titleDesc': 'Nazwa: Z-A',
+        'sort.createdDesc': 'Ostatnio utworzone',
+        
+        // Wyszukiwanie
+        'search.placeholder': 'Szukaj wydarzeń...',
+        'search.noResults': 'Nie znaleziono wydarzeń',
+        'search.searching': 'Wyszukiwanie...',
         
         // Tworzenie wydarzenia
         'create.title': 'Nowe wydarzenie',
+        'create.formProgress': 'Postęp wypełniania',
+        'create.fieldsCompleted': 'pól wypełnionych',
         'create.basicInfo': 'Podstawowe informacje',
         'create.eventTitle': 'Nazwa wydarzenia',
         'create.titlePlaceholder': 'np. Grillowanie w parku',
@@ -73,6 +105,9 @@ class I18n {
         'create.startTime': 'Godzina rozpoczęcia',
         'create.endDate': 'Data zakończenia',
         'create.endTime': 'Godzina zakończenia',
+        'create.quickDuration': 'Szybki wybór:',
+        'create.halfDay': 'Pół dnia',
+        'create.fullDay': 'Cały dzień',
         'create.location': 'Lokalizacja',
         'create.eventLocation': 'Miejsce wydarzenia',
         'create.locationPlaceholder': 'Adres lub nazwa miejsca',
@@ -182,8 +217,18 @@ class I18n {
         'details.inviteCodeCopied': 'Skopiowano kod zaproszenia',
         'details.noInviteCode': 'Brak kodu zaproszenia',
         'details.copyError': 'Nie udało się skopiować kodu',
-        'details.exportCalendar': 'Eksportuj do kalendarza',
         'details.showQR': 'Pokaż kod QR',
+        'details.addToCalendar': 'Dodaj do kalendarza',
+        'details.participants': 'Uczestnicy',
+        'details.noParticipants': 'Nikt jeszcze nie dołączył do wydarzenia',
+        'details.participantCount': '{{count}} uczestników',
+        'details.joinEvent': 'Dołącz do wydarzenia',
+        'details.joinEventTitle': 'Dołącz do wydarzenia',
+        'details.joinDescription': 'Potwierdź, że chcesz dołączyć do tego wydarzenia:',
+        'details.yourName': 'Twoje imię',
+        'details.yourEmail': 'Twój email (opcjonalnie)',
+        'details.confirmJoin': 'Potwierdź udział',
+        'details.joined': 'Już zapisany',
         'details.editEvent': 'Edytuj wydarzenie',
         'details.deleteEvent': 'Usuń wydarzenie',
         'details.shareTitle': 'Udostępnij wydarzenie',
@@ -225,6 +270,9 @@ class I18n {
         'error.geolocationDenied': 'Dostęp do lokalizacji został odrzucony',
         'error.geolocationUnavailable': 'Geolokalizacja jest niedostępna',
         'error.geolocationTimeout': 'Przekroczono limit czasu pobierania lokalizacji',
+        'error.qrFailed': 'Nie udało się wygenerować kodu QR',
+        'error.qrLibrary': 'Biblioteka QR Code nie jest załadowana',
+        'error.copyError': 'Nie udało się skopiować linku',
         
         // Walidacja
         'validation.titleRequired': 'Nazwa wydarzenia jest wymagana',
@@ -275,7 +323,6 @@ class I18n {
         'success.eventDeleted': 'Wydarzenie zostało usunięte',
         'success.linkCopied': 'Link został skopiowany do schowka',
         'success.locationObtained': 'Lokalizacja została pobrana',
-        'success.calendarExported': 'Wydarzenie zostało wyeksportowane do kalendarza',
         
         // Geolokalizacja
         'geolocation.getting': 'Pobieranie lokalizacji...',
@@ -451,12 +498,32 @@ class I18n {
         'home.viewDetails': 'View details',
         
         // Filters
+        'filter.showFilters': 'Add filters',
+        'filter.hideFilters': 'Hide filters',
+        'filter.timeLabel': 'Time',
+        'filter.themeLabel': 'Theme',
+        'filter.sortLabel': 'Sort',
         'filter.all': 'All',
         'filter.upcoming': 'Upcoming',
         'filter.past': 'Past',
+        'filter.allThemes': 'All themes',
+        
+        // Sorting
+        'sort.dateAsc': 'Date: oldest first',
+        'sort.dateDesc': 'Date: newest first',
+        'sort.titleAsc': 'Name: A-Z',
+        'sort.titleDesc': 'Name: Z-A',
+        'sort.createdDesc': 'Recently created',
+        
+        // Search
+        'search.placeholder': 'Search events...',
+        'search.noResults': 'No events found',
+        'search.searching': 'Searching...',
         
         // Create event
         'create.title': 'New event',
+        'create.formProgress': 'Completion progress',
+        'create.fieldsCompleted': 'fields completed',
         'create.basicInfo': 'Basic information',
         'create.eventTitle': 'Event name',
         'create.titlePlaceholder': 'e.g. BBQ in the park',
@@ -467,6 +534,9 @@ class I18n {
         'create.startTime': 'Start time',
         'create.endDate': 'End date',
         'create.endTime': 'End time',
+        'create.quickDuration': 'Quick select:',
+        'create.halfDay': 'Half day',
+        'create.fullDay': 'Full day',
         'create.location': 'Location',
         'create.eventLocation': 'Event location',
         'create.locationPlaceholder': 'Address or place name',
@@ -576,8 +646,18 @@ class I18n {
         'details.inviteCodeCopied': 'Invitation code copied',
         'details.noInviteCode': 'No invitation code',
         'details.copyError': 'Failed to copy code',
-        'details.exportCalendar': 'Export to calendar',
         'details.showQR': 'Show QR code',
+        'details.addToCalendar': 'Add to calendar',
+        'details.participants': 'Participants',
+        'details.noParticipants': 'No one has joined the event yet',
+        'details.participantCount': '{{count}} participants',
+        'details.joinEvent': 'Join event',
+        'details.joinEventTitle': 'Join event',
+        'details.joinDescription': 'Confirm that you want to join this event:',
+        'details.yourName': 'Your name',
+        'details.yourEmail': 'Your email (optional)',
+        'details.confirmJoin': 'Confirm participation',
+        'details.joined': 'Already joined',
         'details.editEvent': 'Edit event',
         'details.deleteEvent': 'Delete event',
         'details.shareTitle': 'Share event',
@@ -619,6 +699,9 @@ class I18n {
         'error.geolocationDenied': 'Location access denied',
         'error.geolocationUnavailable': 'Geolocation is unavailable',
         'error.geolocationTimeout': 'Location timeout exceeded',
+        'error.qrFailed': 'Failed to generate QR code',
+        'error.qrLibrary': 'QR Code library is not loaded',
+        'error.copyError': 'Failed to copy link',
         
         // Validation
         'validation.titleRequired': 'Event name is required',
@@ -669,7 +752,6 @@ class I18n {
         'success.eventDeleted': 'Event has been deleted',
         'success.linkCopied': 'Link copied to clipboard',
         'success.locationObtained': 'Location obtained',
-        'success.calendarExported': 'Event exported to calendar',
         
         // Geolocation
         'geolocation.getting': 'Getting location...',

@@ -119,3 +119,6 @@ Thumbs.db
 # Build directories
 build/
 dist/
+# Markdown files except README.md
+*.md
+!README.md

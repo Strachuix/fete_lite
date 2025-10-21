@@ -4,6 +4,7 @@ let eventMap = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     initEventDetails();
+    initModalHandlers();
 });
 
 async function initEventDetails() {
@@ -31,6 +32,60 @@ async function initEventDetails() {
         console.error('Błąd ładowania wydarzenia:', error);
         showErrorState('details.loadError', 'Błąd ładowania wydarzenia');
     }
+}
+
+// Initialize modal handlers (close buttons, backdrop clicks)
+function initModalHandlers() {
+    const modals = document.querySelectorAll('.modal');
+    
+    modals.forEach(modal => {
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                hideModal(modal.id);
+            }
+        });
+        
+        // Close on close button click
+        const closeButtons = modal.querySelectorAll('.modal-close');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                hideModal(modal.id);
+            });
+        });
+    });
+    
+    // ESC key to close modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const openModal = document.querySelector('.modal.show');
+            if (openModal) {
+                hideModal(openModal.id);
+            }
+        }
+    });
+}
+
+// Show modal helper
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+// Hide modal helper
+function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    }, 300); // Match CSS transition duration
 }
 
 function getEventIdFromUrl() {
@@ -111,6 +166,9 @@ function displayEventDetails(event) {
     if (event.invitationCode) {
         displayInvitationCode(event.invitationCode);
     }
+    
+    // Wyświetl listę uczestników
+    displayParticipants(event.id);
     
     // Pokaż kontener szczegółów
     const detailsContainer = document.getElementById('event-details-container');
@@ -208,6 +266,84 @@ function displayInvitationCode(code) {
     eventMeta.appendChild(inviteCodeDiv);
 }
 
+function displayParticipants(eventId) {
+    const participantsSection = document.getElementById('event-participants-section');
+    const participantsList = document.getElementById('participants-list');
+    const noParticipantsMsg = document.getElementById('no-participants-message');
+    
+    if (!participantsSection || !participantsList) {
+        return;
+    }
+    
+    // Załaduj uczestników z localStorage
+    const participantsData = localStorage.getItem(`event_participants_${eventId}`);
+    
+    if (!participantsData) {
+        // Brak uczestników
+        if (noParticipantsMsg) {
+            noParticipantsMsg.style.display = 'block';
+        }
+        participantsList.innerHTML = '';
+        participantsSection.style.display = 'none';
+        return;
+    }
+    
+    try {
+        const participants = JSON.parse(participantsData);
+        
+        if (!participants || participants.length === 0) {
+            // Pusta lista uczestników
+            if (noParticipantsMsg) {
+                noParticipantsMsg.style.display = 'block';
+            }
+            participantsList.innerHTML = '';
+            participantsSection.style.display = 'none';
+            return;
+        }
+        
+        // Pokaż sekcję uczestników
+        participantsSection.style.display = 'block';
+        if (noParticipantsMsg) {
+            noParticipantsMsg.style.display = 'none';
+        }
+        
+        // Wygeneruj listę uczestników
+        participantsList.innerHTML = participants.map(participant => {
+            const initials = getParticipantInitials(participant.name);
+            const emailText = participant.email ? `<div class="participant-email">${participant.email}</div>` : '';
+            
+            return `
+                <div class="participant-card">
+                    <div class="participant-avatar">${initials}</div>
+                    <div class="participant-info">
+                        <div class="participant-name">${participant.name}</div>
+                        ${emailText}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Błąd parsowania danych uczestników:', error);
+        if (noParticipantsMsg) {
+            noParticipantsMsg.style.display = 'block';
+        }
+        participantsSection.style.display = 'none';
+    }
+}
+
+function getParticipantInitials(name) {
+    if (!name) return '?';
+    
+    const nameParts = name.trim().split(' ').filter(part => part.length > 0);
+    
+    if (nameParts.length === 0) return '?';
+    if (nameParts.length === 1) return nameParts[0][0].toUpperCase();
+    
+    // Pierwsza litera z pierwszego i ostatniego słowa
+    return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+}
+
 function showEventMap(coordinates, locationName) {
     const mapContainer = document.getElementById('event-map');
     const mapSection = document.getElementById('event-map-section');
@@ -232,19 +368,31 @@ function showEventMap(coordinates, locationName) {
 }
 
 function initEventActionHandlers(event) {
+    // Dodaj do kalendarza
+    const addToCalendarBtn = document.getElementById('add-to-calendar-btn');
+    if (addToCalendarBtn) {
+        addToCalendarBtn.addEventListener('click', async function() {
+            if (window.icsExportManager) {
+                await window.icsExportManager.exportEventToCalendar(event);
+            } else {
+                showNotification('Moduł eksportu kalendarza nie jest dostępny', 'error');
+            }
+        });
+    }
+    
+    // Dołącz do wydarzenia (dla uczestników)
+    const joinBtn = document.getElementById('join-event-btn');
+    if (joinBtn) {
+        joinBtn.addEventListener('click', function() {
+            showJoinModal(event);
+        });
+    }
+    
     // Skopiuj kod zaproszenia
     const copyInviteCodeBtn = document.getElementById('copy-invite-code-btn');
     if (copyInviteCodeBtn) {
         copyInviteCodeBtn.addEventListener('click', async function() {
             await copyInviteCode(event);
-        });
-    }
-    
-    // Eksport do kalendarza
-    const exportBtn = document.getElementById('export-calendar-btn');
-    if (exportBtn) {
-        exportBtn.addEventListener('click', function() {
-            exportToCalendar(event);
         });
     }
     
@@ -352,10 +500,29 @@ function hideLoadingState() {
 }
 
 async function deleteCurrentEvent() {
+    if (!currentEvent) {
+        showNotification('Brak wydarzenia do usunięcia', 'error');
+        return;
+    }
+    
     try {
+        // Close modal first
+        hideModal('delete-modal');
+        
+        // Show loading notification
+        showNotification('Usuwanie wydarzenia...', 'info');
+        
+        // Delete the event
         await deleteEvent(currentEvent.id);
+        
+        // Show success and redirect
         showNotification('Wydarzenie zostało usunięte', 'success');
-        window.location.href = '/';
+        
+        // Redirect after short delay
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+        
     } catch (error) {
         console.error('Błąd usuwania wydarzenia:', error);
         showNotification('Błąd podczas usuwania wydarzenia', 'error');
@@ -363,27 +530,66 @@ async function deleteCurrentEvent() {
 }
 
 function showDirections(coordinates) {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}`;
-    window.open(url, '_blank');
+    // Detect platform and use appropriate maps service
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let url;
+    
+    if (isIOS) {
+        // Use Apple Maps on iOS
+        url = `maps://maps.apple.com/?daddr=${coordinates.lat},${coordinates.lng}&dirflg=d`;
+        
+        // Fallback to Google Maps if Apple Maps doesn't open
+        setTimeout(() => {
+            window.open(`https://maps.google.com/maps?daddr=${coordinates.lat},${coordinates.lng}`, '_blank');
+        }, 25);
+    } else if (isAndroid) {
+        // Try to open in Google Maps app first
+        url = `google.navigation:q=${coordinates.lat},${coordinates.lng}`;
+        
+        // Fallback to web version
+        setTimeout(() => {
+            window.open(`https://maps.google.com/maps?daddr=${coordinates.lat},${coordinates.lng}`, '_blank');
+        }, 25);
+    } else {
+        // Desktop - use Google Maps web
+        url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}`;
+    }
+    
+    // Try to open native app first (mobile)
+    if (isIOS || isAndroid) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.click();
+    } else {
+        // Desktop - direct open
+        window.open(url, '_blank');
+    }
 }
 
 // Sprawdź uprawnienia organizatora i dostosuj interfejs
 function checkOrganizerPermissions(event) {
     const isOrganizer = window.storageManager && window.storageManager.isUserOrganizer(event.id);
     
-    // Pobierz przycisk edycji, sekcję z niebezpiecznymi akcjami i action-buttons
+    // Pobierz przyciski
     const editBtn = document.getElementById('edit-event-btn');
     const dangerActions = document.querySelector('.danger-actions');
     const actionButtons = document.querySelector('.action-buttons');
+    const joinBtn = document.getElementById('join-event-btn');
     
-    // Usuń przycisk edycji i całą sekcję danger-actions z DOM jeśli użytkownik nie jest organizatorem
+    // Pokaż przycisk dołączenia tylko dla nie-organizatorów
     if (!isOrganizer) {
+        if (joinBtn) joinBtn.style.display = 'flex';
         if (editBtn) editBtn.remove();
         if (dangerActions) {
             dangerActions.remove();
             // Usuń margines dolny z action-buttons gdy danger-actions są usunięte
             if (actionButtons) actionButtons.classList.add('no-danger-margin');
         }
+    } else {
+        // Ukryj przycisk dołączenia dla organizatora
+        if (joinBtn) joinBtn.style.display = 'none';
     }
     
     // Wyświetl informacje o organizatorze
@@ -482,5 +688,265 @@ async function copyInviteCode(event) {
             window.t('details.copyError') || 'Nie udało się skopiować kodu',
             'error'
         );
+    }
+}
+
+// Pokaż modal z kodem QR
+function showQRModal(event) {
+    if (!event) return;
+    
+    const modal = document.getElementById('qr-modal');
+    if (!modal) {
+        console.warn('[EventDetails] QR modal not found');
+        return;
+    }
+    
+    // Wygeneruj dane do QR code (kod zaproszenia + link)
+    const eventUrl = `${window.location.origin}${window.location.pathname}?id=${event.id}`;
+    const qrData = event.invitationCode ? 
+        `${event.invitationCode}\n${eventUrl}` : 
+        eventUrl;
+    
+    // Znajdź kontener na QR code
+    const qrContainer = modal.querySelector('#qr-code-container') || modal.querySelector('.qr-code');
+    if (!qrContainer) {
+        console.warn('[EventDetails] QR container not found');
+        return;
+    }
+    
+    // Wyczyść poprzedni kod
+    qrContainer.innerHTML = '';
+    
+    // Sprawdź czy biblioteka QRCode jest dostępna
+    if (typeof QRCode !== 'undefined') {
+        try {
+            // Wygeneruj nowy kod QR
+            new QRCode(qrContainer, {
+                text: qrData,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Dodaj tekst z kodem zaproszenia
+            if (event.invitationCode) {
+                const codeText = modal.querySelector('#qr-code-text') || modal.querySelector('.qr-invite-code');
+                if (codeText) {
+                    codeText.textContent = event.invitationCode;
+                }
+            }
+            
+            
+            // Pokaż modal
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            
+        } catch (error) {
+            console.error('[EventDetails] QR generation error:', error);
+            showNotification(window.t('error.qrFailed') || 'Nie udało się wygenerować kodu QR', 'error');
+        }
+    } else {
+        console.warn('[EventDetails] QRCode library not loaded');
+        showNotification(window.t('error.qrLibrary') || 'Biblioteka QR code nie została załadowana', 'error');
+    }
+}
+
+// Udostępnij wydarzenie za pomocą Web Share API
+async function shareEvent(event) {
+    if (!event) {
+        console.warn('[EventDetails] No event to share');
+        return Promise.reject(new Error('No event'));
+    }
+    
+    const eventUrl = `${window.location.origin}/event-details.html?id=${event.id}`;
+    const shareData = {
+        title: event.title,
+        text: event.description || window.t('home.viewDetails') || 'Zobacz szczegóły wydarzenia',
+        url: eventUrl
+    };
+    
+    try {
+        // Sprawdź czy Web Share API jest dostępne
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            console.log('[EventDetails] Event shared via Web Share API');
+            return Promise.resolve();
+        }
+    } catch (error) {
+        // Użytkownik anulował udostępnianie - to nie jest błąd
+        if (error.name === 'AbortError') {
+            console.log('[EventDetails] Share cancelled by user');
+            return Promise.reject(error);
+        }
+        console.error('[EventDetails] Web Share API error:', error);
+    }
+    
+    // Fallback - skopiuj link do schowka
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(eventUrl);
+            showNotification(
+                window.t('success.linkCopied') || 'Link został skopiowany do schowka',
+                'success'
+            );
+            return Promise.resolve();
+        } else {
+            // Starszy fallback dla przeglądarek bez Clipboard API
+            const textArea = document.createElement('textarea');
+            textArea.value = eventUrl;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            showNotification(
+                window.t('success.linkCopied') || 'Link został skopiowany do schowka',
+                'success'
+            );
+            return Promise.resolve();
+        }
+    } catch (error) {
+        console.error('[EventDetails] Clipboard copy error:', error);
+        showNotification(
+            window.t('error.copyError') || 'Nie udało się skopiować linku',
+            'error'
+        );
+        return Promise.reject(error);
+    }
+}
+
+
+// ========================================
+// Join Event Functionality
+// ========================================
+
+function showJoinModal(event) {
+    const modal = document.getElementById('join-modal');
+    if (!modal) return;
+    
+    // Fill event info
+    const eventName = document.getElementById('join-event-name');
+    const eventDate = document.getElementById('join-event-date');
+    
+    if (eventName) eventName.textContent = event.title;
+    if (eventDate) {
+        const startDate = new Date(event.startDate);
+        eventDate.textContent = startDate.toLocaleString('pl-PL', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    // Handle modal close
+    const closeButtons = modal.querySelectorAll('.modal-close');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', () => closeJoinModal());
+    });
+    
+    // Handle confirm join
+    const confirmBtn = document.getElementById('confirm-join-btn');
+    if (confirmBtn) {
+        confirmBtn.onclick = () => confirmJoinEvent(event);
+    }
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeJoinModal();
+    });
+}
+
+function closeJoinModal() {
+    const modal = document.getElementById('join-modal');
+    if (!modal) return;
+    
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        // Reset form
+        document.getElementById('participant-name').value = '';
+        document.getElementById('participant-email').value = '';
+    }, 300);
+}
+
+function confirmJoinEvent(event) {
+    const nameInput = document.getElementById('participant-name');
+    const emailInput = document.getElementById('participant-email');
+    
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    
+    if (!name) {
+        showNotification('Podaj swoje imi�', 'error');
+        nameInput.focus();
+        return;
+    }
+    
+    // Create participant object
+    const participant = {
+        id: Date.now().toString(),
+        name: name,
+        email: email || null,
+        joinedAt: new Date().toISOString()
+    };
+    
+    // Get existing participants
+    let participants = [];
+    const storedData = localStorage.getItem(`event_participants_${event.id}`);
+    if (storedData) {
+        try {
+            participants = JSON.parse(storedData);
+        } catch (e) {
+            participants = [];
+        }
+    }
+    
+    // Check if already joined
+    if (participants.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+        showNotification('Już dołączyłeś do tego wydarzenia', 'info');
+        closeJoinModal();
+        return;
+    }
+    
+    // Add participant
+    participants.push(participant);
+    localStorage.setItem(`event_participants_${event.id}`, JSON.stringify(participants));
+    
+    // Update participant count display if exists
+    updateParticipantCount(event.id, participants.length);
+    
+    // Show success message
+    showNotification('Pomyślnie dołączono do wydarzenia!', 'success');
+    
+    // Close modal
+    closeJoinModal();
+    
+    // Refresh participants list
+    displayParticipants(event.id);
+    
+    // Update join button to show "Joined" state
+    const joinBtn = document.getElementById('join-event-btn');
+    if (joinBtn) {
+        joinBtn.innerHTML = '<span class="btn-icon"></span><span data-i18n="details.joined">Już zapisany</span>';
+        joinBtn.disabled = true;
+        joinBtn.classList.add('joined');
+    }
+}
+
+function updateParticipantCount(eventId, count) {
+    // Update participant count in the UI if element exists
+    const countElement = document.getElementById('participant-count');
+    if (countElement) {
+        countElement.textContent = count;
     }
 }

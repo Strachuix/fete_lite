@@ -5,12 +5,21 @@ class StorageManager {
   constructor() {
     this.storageKey = 'fete-lite-events';
     this.settingsKey = 'fete-lite-settings';
+    this.offlineQueueKey = 'fete-lite-offline-queue';
+    this.cacheKey = 'fete-lite-events-cache';
     this.isLocalStorageAvailable = this.checkLocalStorageSupport();
+    this.useApi = true; // Domyślnie próbuj używać API
     
     if (!this.isLocalStorageAvailable) {
       console.warn('[Storage] localStorage nie jest dostępne, używam fallback');
       this.fallbackStorage = new Map();
     }
+
+    // Inicjalizuj offline queue
+    this.offlineQueue = this.loadOfflineQueue();
+    
+    // Nasłuchuj zmian statusu online/offline
+    window.addEventListener('online', () => this.syncOfflineQueue());
   }
 
   // Sprawdź dostępność localStorage
@@ -466,6 +475,308 @@ class StorageManager {
   getUserEvents(userId) {
     const allEvents = this.getAllEvents();
     return allEvents.filter(event => event.organizerId === userId);
+  }
+
+  // ==================== HYBRYDOWY TRYB: API + localStorage ====================
+
+  /**
+   * Pobierz wszystkie wydarzenia (hybrydowo)
+   * Próbuje API → fallback na localStorage cache
+   */
+  async getAllEventsHybrid(filters = {}) {
+    // Sprawdź czy API jest dostępne
+    if (this.useApi && navigator.onLine && window.apiClient) {
+      try {
+        console.log('[Storage] Fetching events from API...');
+        const apiEvents = await window.apiClient.getEvents(filters);
+        
+        // Konwertuj z API do formatu frontendowego
+        const events = apiEvents.map(e => window.DataAdapter.eventFromApi(e));
+        
+        // Zaktualizuj cache
+        this.saveCacheToLocalStorage(events);
+        
+        return events;
+      } catch (error) {
+        console.warn('[Storage] API failed, using cache:', error.message);
+        return this.getEventsFromCache();
+      }
+    } else {
+      console.log('[Storage] Offline mode, using cache');
+      return this.getEventsFromCache();
+    }
+  }
+
+  /**
+   * Pobierz pojedyncze wydarzenie (hybrydowo)
+   */
+  async getEventHybrid(id) {
+    if (this.useApi && navigator.onLine && window.apiClient) {
+      try {
+        const apiEvent = await window.apiClient.getEvent(id);
+        const event = window.DataAdapter.eventFromApi(apiEvent);
+        
+        // Zaktualizuj cache
+        this.updateEventInCache(event);
+        
+        return event;
+      } catch (error) {
+        console.warn('[Storage] API failed, using cache:', error.message);
+        return this.getEvent(id);
+      }
+    } else {
+      return this.getEvent(id);
+    }
+  }
+
+  /**
+   * Zapisz wydarzenie (hybrydowo)
+   * Online: wyślij do API → zapisz lokalnie
+   * Offline: zapisz lokalnie → dodaj do kolejki sync
+   */
+  async saveEventHybrid(eventData) {
+    // Walidacja
+    const validation = window.DataAdapter.validateEventForApi(eventData);
+    if (!validation.valid) {
+      throw new Error(validation.errors.join(', '));
+    }
+
+    // Najpierw zapisz lokalnie (dla instant feedback)
+    const localEvent = this.saveEvent(eventData);
+
+    // Spróbuj wysłać do API
+    if (this.useApi && navigator.onLine && window.apiClient) {
+      try {
+        console.log('[Storage] Saving event to API...');
+        
+        // Konwertuj do formatu API
+        const apiEventData = window.DataAdapter.eventToApi(localEvent);
+        
+        let apiEvent;
+        if (localEvent.id && localEvent.id.toString().startsWith('event_')) {
+          // Nowe wydarzenie (lokalne ID)
+          apiEvent = await window.apiClient.createEvent(apiEventData);
+        } else {
+          // Aktualizacja istniejącego
+          apiEvent = await window.apiClient.updateEvent(localEvent.id, apiEventData);
+        }
+        
+        // Zaktualizuj lokalne wydarzenie z ID z serwera
+        const serverEvent = window.DataAdapter.eventFromApi(apiEvent);
+        this.saveEvent(serverEvent);
+        
+        console.log('[Storage] Event saved to API successfully');
+        return serverEvent;
+        
+      } catch (error) {
+        console.warn('[Storage] API save failed, queuing for sync:', error.message);
+        
+        // Dodaj do kolejki offline
+        this.addToOfflineQueue({
+          action: 'create',
+          type: 'event',
+          data: localEvent,
+          timestamp: Date.now()
+        });
+        
+        return localEvent;
+      }
+    } else {
+      // Offline - dodaj do kolejki
+      console.log('[Storage] Offline mode, queuing event');
+      this.addToOfflineQueue({
+        action: 'create',
+        type: 'event',
+        data: localEvent,
+        timestamp: Date.now()
+      });
+      
+      return localEvent;
+    }
+  }
+
+  /**
+   * Usuń wydarzenie (hybrydowo)
+   */
+  async deleteEventHybrid(eventId) {
+    // Usuń lokalnie
+    this.deleteEvent(eventId);
+
+    // Spróbuj usunąć z API
+    if (this.useApi && navigator.onLine && window.apiClient) {
+      try {
+        await window.apiClient.deleteEvent(eventId);
+        console.log('[Storage] Event deleted from API');
+      } catch (error) {
+        console.warn('[Storage] API delete failed, queuing:', error.message);
+        
+        // Dodaj do kolejki
+        this.addToOfflineQueue({
+          action: 'delete',
+          type: 'event',
+          id: eventId,
+          timestamp: Date.now()
+        });
+      }
+    } else {
+      // Offline
+      this.addToOfflineQueue({
+        action: 'delete',
+        type: 'event',
+        id: eventId,
+        timestamp: Date.now()
+      });
+    }
+  }
+
+  /**
+   * Dołącz do wydarzenia (hybrydowo)
+   */
+  async joinEventHybrid(eventId) {
+    if (this.useApi && navigator.onLine && window.apiClient) {
+      try {
+        await window.apiClient.joinEvent(eventId);
+        console.log('[Storage] Joined event via API');
+        return true;
+      } catch (error) {
+        console.warn('[Storage] API join failed:', error.message);
+        throw error;
+      }
+    } else {
+      throw new Error('Dołączenie do wydarzenia wymaga połączenia z internetem');
+    }
+  }
+
+  // ==================== Cache Management ====================
+
+  getEventsFromCache() {
+    try {
+      const cacheJson = localStorage.getItem(this.cacheKey);
+      if (cacheJson) {
+        return JSON.parse(cacheJson);
+      }
+      // Fallback na stare wydarzenia z localStorage
+      return this.getAllEvents();
+    } catch (error) {
+      console.error('[Storage] Cache read error:', error);
+      return this.getAllEvents();
+    }
+  }
+
+  saveCacheToLocalStorage(events) {
+    try {
+      localStorage.setItem(this.cacheKey, JSON.stringify(events));
+      console.log(`[Storage] Cached ${events.length} events`);
+    } catch (error) {
+      console.error('[Storage] Cache write error:', error);
+    }
+  }
+
+  updateEventInCache(event) {
+    const cache = this.getEventsFromCache();
+    const index = cache.findIndex(e => e.id === event.id);
+    
+    if (index >= 0) {
+      cache[index] = event;
+    } else {
+      cache.push(event);
+    }
+    
+    this.saveCacheToLocalStorage(cache);
+  }
+
+  // ==================== Offline Queue ====================
+
+  loadOfflineQueue() {
+    try {
+      const queueJson = localStorage.getItem(this.offlineQueueKey);
+      return queueJson ? JSON.parse(queueJson) : [];
+    } catch (error) {
+      console.error('[Storage] Queue load error:', error);
+      return [];
+    }
+  }
+
+  saveOfflineQueue() {
+    try {
+      localStorage.setItem(this.offlineQueueKey, JSON.stringify(this.offlineQueue));
+    } catch (error) {
+      console.error('[Storage] Queue save error:', error);
+    }
+  }
+
+  addToOfflineQueue(item) {
+    this.offlineQueue.push(item);
+    this.saveOfflineQueue();
+    console.log(`[Storage] Added to offline queue: ${item.action} ${item.type}`);
+  }
+
+  /**
+   * Synchronizuj kolejkę offline z API
+   */
+  async syncOfflineQueue() {
+    if (!navigator.onLine || !window.apiClient) {
+      console.log('[Storage] Cannot sync: offline or no API client');
+      return;
+    }
+
+    if (this.offlineQueue.length === 0) {
+      console.log('[Storage] Offline queue is empty');
+      return;
+    }
+
+    console.log(`[Storage] Syncing ${this.offlineQueue.length} queued items...`);
+
+    const failedItems = [];
+
+    for (const item of this.offlineQueue) {
+      try {
+        if (item.type === 'event') {
+          if (item.action === 'create') {
+            const apiEventData = window.DataAdapter.eventToApi(item.data);
+            const apiEvent = await window.apiClient.createEvent(apiEventData);
+            
+            // Zaktualizuj lokalne wydarzenie z ID z serwera
+            const serverEvent = window.DataAdapter.eventFromApi(apiEvent);
+            this.saveEvent(serverEvent);
+            
+            console.log(`[Storage] Synced event: ${item.data.title}`);
+          } else if (item.action === 'delete') {
+            await window.apiClient.deleteEvent(item.id);
+            console.log(`[Storage] Synced delete: ${item.id}`);
+          }
+        }
+      } catch (error) {
+        console.error(`[Storage] Sync failed for item:`, error);
+        failedItems.push(item);
+      }
+    }
+
+    // Pozostaw tylko nieudane elementy w kolejce
+    this.offlineQueue = failedItems;
+    this.saveOfflineQueue();
+
+    const syncedCount = this.offlineQueue.length - failedItems.length;
+    console.log(`[Storage] Sync complete: ${syncedCount} synced, ${failedItems.length} failed`);
+
+    // Powiadom UI o synchronizacji
+    document.dispatchEvent(new CustomEvent('offlineSyncComplete', {
+      detail: { synced: syncedCount, failed: failedItems.length }
+    }));
+  }
+
+  /**
+   * Pobierz status kolejki offline
+   */
+  getOfflineQueueStatus() {
+    return {
+      count: this.offlineQueue.length,
+      items: this.offlineQueue.map(item => ({
+        action: item.action,
+        type: item.type,
+        timestamp: item.timestamp
+      }))
+    };
   }
 }
 

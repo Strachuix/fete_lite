@@ -176,6 +176,73 @@ class FeteLiteApp {
         window.eventManager.setFilter(e.target.value);
       });
     }
+    
+    // Theme filter
+    const themeFilter = document.getElementById('theme-filter');
+    if (themeFilter) {
+      // Populate theme filter with available themes
+      this.populateThemeFilter(themeFilter);
+      
+      themeFilter.addEventListener('change', (e) => {
+        window.eventManager.setThemeFilter(e.target.value);
+      });
+    }
+    
+    // Sort dropdown
+    const sortEvents = document.getElementById('sort-events');
+    if (sortEvents) {
+      sortEvents.addEventListener('change', (e) => {
+        window.eventManager.setSorting(e.target.value);
+      });
+    }
+    
+    // Search input
+    const searchInput = document.getElementById('event-search');
+    if (searchInput) {
+      // Debounce search to avoid too many calls
+      let searchTimeout;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          window.eventManager.setSearchQuery(e.target.value.trim());
+        }, 300); // Wait 300ms after user stops typing
+      });
+      
+      // Clear search on ESC key
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          searchInput.value = '';
+          window.eventManager.setSearchQuery('');
+        }
+      });
+    }
+  }
+  
+  // Populate theme filter dropdown with themes from event-themes.js
+  populateThemeFilter(selectElement) {
+    if (!window.EventThemes || !window.EventThemes.EVENT_THEMES) {
+      console.warn('[Main] Event themes not loaded');
+      return;
+    }
+    
+    // Clear existing options except the "All themes" option
+    while (selectElement.options.length > 1) {
+      selectElement.remove(1);
+    }
+    
+    // Add theme options
+    window.EventThemes.EVENT_THEMES.forEach(theme => {
+      const option = document.createElement('option');
+      option.value = theme.id;
+      option.setAttribute('data-i18n', `theme.${theme.id}`);
+      option.textContent = theme.name;
+      selectElement.appendChild(option);
+    });
+    
+    // Apply translations if i18n is loaded
+    if (window.i18n && window.i18n.translatePage) {
+      window.i18n.translatePage();
+    }
   }
 
   // Konfiguracja rozszerzonych pól formularza
@@ -1067,3 +1134,52 @@ if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
   console.log('- location.reload(true) - standardowe przeładowanie');
 }
 
+// Inicjalizacja przycisku przełączania filtrów (tylko na index.html)
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
+  const filtersContainer = document.getElementById('filters-container');
+  
+  if (toggleFiltersBtn && filtersContainer) {
+    let filtersVisible = false;
+    
+    toggleFiltersBtn.addEventListener('click', () => {
+      filtersVisible = !filtersVisible;
+      
+      if (filtersVisible) {
+        filtersContainer.style.display = 'block';
+        // Animacja wjazdu
+        setTimeout(() => {
+          filtersContainer.classList.add('show');
+        }, 10);
+        
+        // Zmień tekst i ikonę przycisku
+        const btnText = toggleFiltersBtn.querySelector('span:not(.btn-icon)');
+        const btnIcon = toggleFiltersBtn.querySelector('.btn-icon');
+        if (btnText) {
+          btnText.setAttribute('data-i18n', 'filter.hideFilters');
+          btnText.textContent = i18n.t('filter.hideFilters');
+        }
+        if (btnIcon) {
+          btnIcon.textContent = '🔼';
+        }
+      } else {
+        filtersContainer.classList.remove('show');
+        // Ukryj po animacji
+        setTimeout(() => {
+          filtersContainer.style.display = 'none';
+        }, 300);
+        
+        // Przywróć oryginalny tekst i ikonę
+        const btnText = toggleFiltersBtn.querySelector('span:not(.btn-icon)');
+        const btnIcon = toggleFiltersBtn.querySelector('.btn-icon');
+        if (btnText) {
+          btnText.setAttribute('data-i18n', 'filter.showFilters');
+          btnText.textContent = i18n.t('filter.showFilters');
+        }
+        if (btnIcon) {
+          btnIcon.textContent = '🔽';
+        }
+      }
+    });
+  }
+});

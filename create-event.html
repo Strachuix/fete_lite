@@ -59,6 +59,20 @@
         <div class="form-container slide-in-up">
             <!-- Formularz tworzenia wydarzenia -->
             <form id="create-event-form" class="event-form animate-on-scroll" novalidate>
+                <!-- Pasek postępu -->
+                <div class="form-progress-container">
+                    <div class="form-progress-info">
+                        <span data-i18n="create.formProgress">Postęp wypełniania</span>
+                        <span class="form-progress-text">
+                            <span id="filled-fields-count">0</span>/<span id="total-fields-count">4</span>
+                            <span data-i18n="create.fieldsCompleted">pól wypełnionych</span>
+                        </span>
+                    </div>
+                    <div class="form-progress-bar">
+                        <div class="form-progress-fill" id="form-progress-fill"></div>
+                    </div>
+                </div>
+                
                 <!-- Sekcja podstawowych informacji -->
                 <section class="form-section stagger-item">
                     <h2 data-i18n="create.basicInfo">Podstawowe informacje</h2>
@@ -158,6 +172,17 @@
                                 class="form-input"
                             >
                             <div class="form-error" id="end-time-error"></div>
+                            
+                            <!-- Quick duration buttons -->
+                            <div class="duration-suggestions">
+                                <span class="duration-label" data-i18n="create.quickDuration">Szybki wybór:</span>
+                                <button type="button" class="btn-duration" data-hours="1">1h</button>
+                                <button type="button" class="btn-duration" data-hours="2">2h</button>
+                                <button type="button" class="btn-duration" data-hours="3">3h</button>
+                                <button type="button" class="btn-duration" data-hours="4">4h</button>
+                                <button type="button" class="btn-duration" data-hours="12" data-i18n="create.halfDay">Pół dnia</button>
+                                <button type="button" class="btn-duration" data-hours="24" data-i18n="create.fullDay">Cały dzień</button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -421,7 +446,7 @@
                             Wybierz tematykę wydarzenia
                         </label>
                         <div class="theme-selection-grid" id="theme-selection-grid">
-                            <!-- Tematyki b�d� za�adowane dynamicznie z event-themes.js -->
+                            <!-- Tematyki b�d� za�adowane dynamicznie z event-themes.js -->
                         </div>
                     </div>
                 </section>
@@ -602,6 +627,10 @@
     <!-- Skrypty -->
     <script src="/js/i18n.js"></script>
     <script src="/js/event-themes.js"></script>
+    <!-- API Integration -->
+    <script src="/js/api-client.js"></script>
+    <script src="/js/data-adapter.js"></script>
+    <!-- Storage & Core -->
     <script src="/js/storage.js"></script>
     <script src="/js/geolocation.js"></script>
     <script src="/js/events.js"></script>

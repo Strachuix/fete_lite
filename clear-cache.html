@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wyczyść Cache - Fete Lite</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        button {
+            background: #673ab7;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #7e4bc9;
+        }
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧹 Wyczyść Cache Aplikacji</h1>
+    <p>Kliknij poniżej, aby wyczyścić cache i zobaczyć najnowsze zmiany.</p>
+    
+    <button onclick="clearCache()">Wyczyść Cache i Przeładuj</button>
+    <button onclick="hardReload()">Przeładuj z Cache (Ctrl+Shift+R)</button>
+    
+    <div id="status" class="status"></div>
+    
+    <hr style="margin: 2rem 0;">
+    
+    <h2>📋 Instrukcja ręczna:</h2>
+    <ol style="text-align: left;">
+        <li><strong>Chrome/Edge:</strong> Ctrl + Shift + R lub Ctrl + F5</li>
+        <li><strong>Firefox:</strong> Ctrl + Shift + R</li>
+        <li><strong>Safari:</strong> Cmd + Shift + R</li>
+    </ol>
+    
+    <p style="margin-top: 2rem;">
+        <a href="index.html" style="color: #673ab7;">← Wróć do aplikacji</a>
+    </p>
+
+    <script>
+        async function clearCache() {
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.className = 'status info';
+            status.textContent = 'Czyszczenie cache...';
+            
+            try {
+                // Wyrejestruj Service Worker
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                    }
+                }
+                
+                // Wyczyść cache storage
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                }
+                
+                // Wyczyść localStorage (opcjonalnie - zakomentowane aby nie usunąć danych)
+                // localStorage.clear();
+                
+                status.className = 'status success';
+                status.textContent = '✅ Cache wyczyszczony! Przeładowuję stronę...';
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                    window.location.reload(true);
+                }, 1500);
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ Błąd: ' + error.message;
+            }
+        }
+        
+        function hardReload() {
+            window.location.href = 'index.html';
+            window.location.reload(true);
+        }
+    </script>
+</body>
+</html>

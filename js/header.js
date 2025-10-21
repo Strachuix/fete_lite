@@ -51,11 +51,57 @@ class HeaderManager {
   createUniformHeader(container) {
     // Ustaw jednolitą klasę dla wszystkich nagłówków
     container.className = 'uniform-header';
+    
+    // Pobierz informacje o użytkowniku
+    const currentUser = this.getCurrentUser();
+    const userAvatarHTML = currentUser ? this.createUserAvatar(currentUser) : '';
+    
     container.innerHTML = `
       <div class="header-content">
         <h1 class="app-title" data-i18n="app.title">Fete Lite</h1>
+        ${userAvatarHTML}
       </div>
     `;
+  }
+  
+  // Pobierz aktualnego użytkownika
+  getCurrentUser() {
+    if (window.authManager && window.authManager.isUserLoggedIn()) {
+      return window.authManager.getCurrentUser();
+    }
+    return null;
+  }
+  
+  // Utwórz avatar użytkownika z inicjałami
+  createUserAvatar(user) {
+    const initials = this.getInitials(user.name || user.username || 'U');
+    const userName = user.name || user.username || 'Użytkownik';
+    
+    return `
+      <div class="user-avatar-container" title="${userName}">
+        <div class="user-avatar">
+          <span class="user-initials">${initials}</span>
+        </div>
+        <span class="user-name">${userName}</span>
+      </div>
+    `;
+  }
+  
+  // Wyciągnij inicjały z imienia
+  getInitials(name) {
+    if (!name) return 'U';
+    
+    const names = name.trim().split(/\s+/);
+    if (names.length === 1) {
+      // Jeśli jedno słowo, weź pierwsze 2 znaki
+      return names[0].substring(0, 2).toUpperCase();
+    }
+    // Jeśli więcej słów, weź pierwszą literę każdego
+    return names
+      .slice(0, 2) // Maksymalnie 2 inicjały
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
   }
 
 

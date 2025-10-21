@@ -114,22 +114,37 @@
                 </div>
             </section>
             
+            <!-- Lista uczestników -->
+            <section class="event-participants-section" id="event-participants-section" style="display: none;">
+                <h3 data-i18n="details.participants">Uczestnicy</h3>
+                <div id="participants-list" class="participants-list"></div>
+                <p id="no-participants-message" class="no-participants" style="display: none;">
+                    <span data-i18n="details.noParticipants">Nikt jeszcze nie dołączył do wydarzenia</span>
+                </p>
+            </section>
+            
             <!-- Przyciski akcji -->
             <section class="event-actions-section">
                 <div class="action-buttons">
+                    <!-- Button for participants to join event -->
+                    <button id="join-event-btn" class="btn btn-primary btn-action" style="display: none;">
+                        <span class="btn-icon">✅</span>
+                        <span data-i18n="details.joinEvent">Dołącz do wydarzenia</span>
+                    </button>
+                    
                     <button id="copy-invite-code-btn" class="btn btn-primary btn-action">
                         <span class="btn-icon">🎫</span>
                         <span data-i18n="details.copyInviteCode">Skopiuj kod zaproszenia</span>
                     </button>
                     
-                    <button id="export-calendar-btn" class="btn btn-primary btn-action">
-                        <span class="btn-icon">📅</span>
-                        <span data-i18n="details.exportCalendar">Eksportuj do kalendarza</span>
-                    </button>
-                    
                     <button id="show-qr-btn" class="btn btn-secondary btn-action">
                         <span class="btn-icon">📱</span>
                         <span data-i18n="details.showQR">Pokaż kod QR</span>
+                    </button>
+                    
+                    <button id="add-to-calendar-btn" class="btn btn-secondary btn-action">
+                        <span class="btn-icon">📅</span>
+                        <span data-i18n="details.addToCalendar">Dodaj do kalendarza</span>
                     </button>
                     
                     <button id="edit-event-btn" class="btn btn-secondary btn-action">
@@ -167,6 +182,39 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal dołączania do wydarzenia -->
+    <div id="join-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="details.joinEventTitle">Dołącz do wydarzenia</h3>
+                <button class="modal-close" aria-label="Zamknij">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p data-i18n="details.joinDescription">Potwierdź, że chcesz dołączyć do tego wydarzenia:</p>
+                <div class="join-info">
+                    <div class="join-event-name" id="join-event-name"></div>
+                    <div class="join-event-date" id="join-event-date"></div>
+                </div>
+                <div class="form-group">
+                    <label for="participant-name" data-i18n="details.yourName">Twoje imię:</label>
+                    <input type="text" id="participant-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant-email" data-i18n="details.yourEmail">Twój email (opcjonalnie):</label>
+                    <input type="email" id="participant-email" class="form-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-join-btn" class="btn btn-primary">
+                    <span data-i18n="details.confirmJoin">Potwierdź udział</span>
+                </button>
+                <button class="btn btn-secondary modal-close">
+                    <span data-i18n="common.cancel">Anuluj</span>
+                </button>
             </div>
         </div>
     </div>
@@ -232,7 +280,12 @@
     <div id="navigation-container"></div>
     
     <!-- Skrypty -->
+    <script src="/js/qrcode.min.js"></script>
     <script src="/js/i18n.js"></script>
+    <!-- API Integration -->
+    <script src="/js/api-client.js"></script>
+    <script src="/js/data-adapter.js"></script>
+    <!-- Storage & Core -->
     <script src="/js/storage.js"></script>
     <script src="/js/geolocation.js"></script>
     <script src="/js/events.js"></script>

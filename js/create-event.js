@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicjalizacja formularza
     initCreateEventForm();
     
+    // Inicjalizacja paska postępu
+    initFormProgress();
+    
+    // Inicjalizacja przycisków czasu trwania
+    initDurationButtons();
+    
     // Obsługa checkboxa noclegu
     const accommodationCheckbox = document.getElementById('accommodation-available');
     const maxOvernightGroup = document.getElementById('max-overnight-group');
@@ -24,10 +30,143 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Initialize duration suggestion buttons
+function initDurationButtons() {
+    const durationButtons = document.querySelectorAll('.btn-duration');
+    const startDateInput = document.getElementById('event-start-date');
+    const startTimeInput = document.getElementById('event-start-time');
+    const endDateInput = document.getElementById('event-end-date');
+    const endTimeInput = document.getElementById('event-end-time');
+    
+    durationButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const hours = parseInt(this.dataset.hours);
+            
+            // Check if start date and time are set
+            if (!startDateInput.value || !startTimeInput.value) {
+                showNotification('Najpierw ustaw datę i godzinę rozpoczęcia', 'warning');
+                return;
+            }
+            
+            // Create start datetime
+            const startDateTime = new Date(`${startDateInput.value}T${startTimeInput.value}`);
+            
+            // Add duration
+            const endDateTime = new Date(startDateTime.getTime() + (hours * 60 * 60 * 1000));
+            
+            // Format end date and time
+            const endDate = endDateTime.toISOString().split('T')[0];
+            const endTime = endDateTime.toTimeString().substring(0, 5);
+            
+            // Set values
+            endDateInput.value = endDate;
+            endTimeInput.value = endTime;
+            
+            // Visual feedback
+            this.classList.add('btn-duration-active');
+            setTimeout(() => {
+                this.classList.remove('btn-duration-active');
+            }, 300);
+            
+            // Show notification
+            const durationText = hours === 1 ? '1 godzinę' : 
+                                hours < 5 ? `${hours} godziny` : 
+                                hours === 12 ? 'pół dnia' :
+                                hours === 24 ? 'cały dzień' : 
+                                `${hours} godzin`;
+            showNotification(`Ustawiono czas trwania: ${durationText}`, 'success');
+        });
+    });
+}
+
+// Initialize form progress bar
+function initFormProgress() {
+    // Required fields that count towards progress
+    const requiredFields = [
+        'event-title',
+        'event-start-date',
+        'event-start-time',
+        'selected-theme'
+    ];
+    
+    const progressFill = document.getElementById('form-progress-fill');
+    const filledCountSpan = document.getElementById('filled-fields-count');
+    const totalCountSpan = document.getElementById('total-fields-count');
+    
+    if (!progressFill || !filledCountSpan || !totalCountSpan) {
+        return;
+    }
+    
+    // Set total count
+    totalCountSpan.textContent = requiredFields.length;
+    
+    function updateProgress() {
+        let filledCount = 0;
+        
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            
+            if (fieldId === 'selected-theme') {
+                // Special case: check if any theme is selected
+                const selectedTheme = document.querySelector('input[name="theme"]:checked');
+                if (selectedTheme) {
+                    filledCount++;
+                }
+            } else if (field && field.value.trim() !== '') {
+                filledCount++;
+            }
+        });
+        
+        // Update counts
+        filledCountSpan.textContent = filledCount;
+        
+        // Calculate percentage
+        const percentage = (filledCount / requiredFields.length) * 100;
+        
+        // Update progress bar
+        progressFill.style.width = percentage + '%';
+        
+        // Add color class based on completion
+        progressFill.classList.remove('low', 'medium', 'high', 'complete');
+        if (percentage === 100) {
+            progressFill.classList.add('complete');
+        } else if (percentage >= 75) {
+            progressFill.classList.add('high');
+        } else if (percentage >= 50) {
+            progressFill.classList.add('medium');
+        } else {
+            progressFill.classList.add('low');
+        }
+    }
+    
+    // Initial update
+    updateProgress();
+    
+    // Listen to changes on all required fields
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        
+        if (fieldId === 'selected-theme') {
+            // Special case: listen to theme radio buttons
+            const themeRadios = document.querySelectorAll('input[name="theme"]');
+            themeRadios.forEach(radio => {
+                radio.addEventListener('change', updateProgress);
+            });
+        } else if (field) {
+            field.addEventListener('input', updateProgress);
+            field.addEventListener('change', updateProgress);
+        }
+    });
+}
+
 function initCreateEventForm() {
     const form = document.getElementById('create-event-form');
     const descriptionTextarea = document.getElementById('event-description');
     const descriptionCounter = document.getElementById('description-counter');
+    
+    // Track form changes for unsaved warning
+    let formChanged = false;
+    let formSubmitted = false;
     
     // Wypełnij numer telefonu użytkownika jeśli jest dostępny
     if (window.authManager && window.authManager.isUserLoggedIn()) {
@@ -40,6 +179,31 @@ function initCreateEventForm() {
             blikInput.value = phoneNumber;
         }
     }
+    
+    // Track changes in form
+    const formInputs = form.querySelectorAll('input, textarea, select');
+    formInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            formChanged = true;
+        });
+        input.addEventListener('input', () => {
+            formChanged = true;
+        });
+    });
+    
+    // Warn before leaving if form has unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+        if (formChanged && !formSubmitted) {
+            e.preventDefault();
+            e.returnValue = ''; // Chrome requires returnValue to be set
+            return 'Masz niezapisane zmiany. Czy na pewno chcesz opuścić stronę?';
+        }
+    });
+    
+    // Clear warning when form is submitted
+    form.addEventListener('submit', () => {
+        formSubmitted = true;
+    });
     
     // Załaduj tematyki dynamicznie
     if (window.EventThemes) {
@@ -83,6 +247,9 @@ function initCreateEventForm() {
     
     // Obsługa formularza
     form.addEventListener('submit', handleFormSubmit);
+    
+    // Obsługa podglądu zdjęć
+    initImagePreview();
     
     // Obsługa podglądu
     const previewBtn = document.getElementById('preview-btn');
@@ -921,5 +1088,147 @@ async function reverseGeocode(lat, lng) {
     } catch (error) {
         console.error('Błąd reverse geocoding:', error);
         return null;
+    }
+}
+// ========================================
+// Image Preview Functionality
+// ========================================
+
+let selectedFiles = [];
+
+function initImagePreview() {
+    const fileInput = document.getElementById('event-images');
+    const previewContainer = document.getElementById('image-preview');
+    
+    if (!fileInput || !previewContainer) return;
+    
+    fileInput.addEventListener('change', function(e) {
+        handleFileSelect(e.target.files);
+    });
+    
+    // Drag and drop support
+    const uploadArea = fileInput.closest('.file-upload-area');
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFileSelect(e.dataTransfer.files);
+        });
+    }
+}
+
+function handleFileSelect(files) {
+    const previewContainer = document.getElementById('image-preview');
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    
+    Array.from(files).forEach(file => {
+        // Validate file type
+        if (!validTypes.includes(file.type)) {
+            showImageNotification(
+                `Nieprawidłowy format pliku: ${file.name}. Użyj JPG, PNG lub WEBP.`,
+                'error'
+            );
+            return;
+        }
+        
+        // Validate file size
+        if (file.size > maxSize) {
+            showImageNotification(
+                `Plik ${file.name} jest za duży. Maksymalny rozmiar to 5MB.`,
+                'error'
+            );
+            return;
+        }
+        
+        // Check if file already added
+        if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+            return;
+        }
+        
+        selectedFiles.push(file);
+        createImagePreview(file);
+    });
+    
+    // Update file input with selected files
+    updateFileInput();
+}
+
+function createImagePreview(file) {
+    const previewContainer = document.getElementById('image-preview');
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'image-preview-item';
+        previewItem.dataset.fileName = file.name;
+        
+        previewItem.innerHTML = `
+            <img src="${e.target.result}" alt="Preview">
+            <div class="image-preview-overlay">
+                <button type="button" class="btn-remove-image" onclick="removeImage('${file.name}')" title="Usuń zdjęcie">
+                    ×
+                </button>
+            </div>
+            <div class="image-preview-info">
+                <span class="image-name">${file.name}</span>
+                <span class="image-size">${formatFileSize(file.size)}</span>
+            </div>
+        `;
+        
+        previewContainer.appendChild(previewItem);
+    };
+    
+    reader.readAsDataURL(file);
+}
+
+function removeImage(fileName) {
+    // Remove from selected files
+    selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+    
+    // Remove preview element
+    const previewItem = document.querySelector(`.image-preview-item[data-file-name="${fileName}"]`);
+    if (previewItem) {
+        previewItem.remove();
+    }
+    
+    // Update file input
+    updateFileInput();
+}
+
+function updateFileInput() {
+    const fileInput = document.getElementById('event-images');
+    const dataTransfer = new DataTransfer();
+    
+    selectedFiles.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+    
+    fileInput.files = dataTransfer.files;
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function showImageNotification(message, type = 'info') {
+    // Use existing notification system if available
+    if (window.showNotification) {
+        window.showNotification(message, type);
+    } else {
+        alert(message);
     }
 }

@@ -6,6 +6,7 @@ class EventManager {
     this.currentFilter = 'all';
     this.currentSort = 'date-asc';
     this.searchQuery = '';
+    this.themeFilter = 'all';
     
     // Binduj kontekst metod
     this.handleEventSaved = this.handleEventSaved.bind(this);
@@ -223,8 +224,13 @@ class EventManager {
       
       let events = window.storageManager.getAllEvents();
       
-      // Zastosuj filtr
+      // Zastosuj filtr czasu (all/upcoming/past)
       events = this.applyFilter(events, this.currentFilter);
+      
+      // Zastosuj filtr tematu
+      if (this.themeFilter && this.themeFilter !== 'all') {
+        events = events.filter(event => event.eventTheme === this.themeFilter);
+      }
       
       // Zastosuj wyszukiwanie
       if (this.searchQuery) {
@@ -287,11 +293,21 @@ class EventManager {
     const startDate = new Date(event.startDate);
     const dayElement = card.querySelector('.event-day');
     const monthElement = card.querySelector('.event-month');
+    const countdownElement = card.querySelector('.event-countdown');
     
     if (dayElement) dayElement.textContent = startDate.getDate();
     if (monthElement) {
       const monthKey = `month.${startDate.toLocaleDateString('en', { month: 'short' }).toLowerCase()}`;
       monthElement.textContent = t(monthKey);
+    }
+    
+    // Licznik dni do wydarzenia
+    if (countdownElement) {
+      const daysUntil = this.calculateDaysUntil(startDate);
+      if (daysUntil !== null) {
+        countdownElement.textContent = daysUntil;
+        countdownElement.className = 'event-countdown visible';
+      }
     }
     
     // Tytuł
@@ -438,6 +454,29 @@ class EventManager {
       (event.location && event.location.toLowerCase().includes(searchTerm))
     );
   }
+  
+  // Oblicz ile dni do wydarzenia
+  calculateDaysUntil(eventDate) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    const event = new Date(eventDate);
+    event.setHours(0, 0, 0, 0);
+    
+    const diffTime = event - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Only show for upcoming events (1-30 days)
+    if (diffDays > 0 && diffDays <= 30) {
+      if (diffDays === 1) {
+        return 'Jutro';
+      } else {
+        return `Za ${diffDays} ${diffDays === 1 ? 'dzień' : diffDays < 5 ? 'dni' : 'dni'}`;
+      }
+    }
+    
+    return null;
+  }
 
   // Zastosuj sortowanie
   applySorting(events, sort) {
@@ -474,6 +513,12 @@ class EventManager {
   // Ustaw wyszukiwanie
   setSearchQuery(query) {
     this.searchQuery = query;
+    this.loadAndDisplayEvents();
+  }
+
+  // Ustaw filtr tematu
+  setThemeFilter(theme) {
+    this.themeFilter = theme;
     this.loadAndDisplayEvents();
   }
 

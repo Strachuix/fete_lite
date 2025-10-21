@@ -147,24 +147,45 @@ class AuthManager {
             // Pokaż loading
             this.showLoading(event.target);
 
-            // Symulacja logowania (później połączenie z API)
-            const loginResult = await this.simulateLogin(credentials);
-            
-            if (loginResult.success) {
-                this.setAuthState(loginResult.user, loginResult.token);
+            // Prawdziwe logowanie przez API
+            try {
+                const user = await window.apiClient.login(credentials.email, credentials.password);
+                
+                // Użyj DataAdapter do konwersji
+                const frontendUser = window.DataAdapter.userFromApi(user);
+                
+                this.setAuthState(frontendUser, window.apiClient.getToken());
                 this.showSuccess('Zalogowano pomyślnie!');
                 
                 // Przekieruj do głównej strony
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 1000);
-            } else {
-                this.showError(loginResult.message);
+                
+            } catch (apiError) {
+                // Jeśli API nie działa (offline), spróbuj localStorage
+                if (apiError.message === 'OFFLINE') {
+                    console.warn('API offline, trying localStorage fallback');
+                    const loginResult = await this.simulateLogin(credentials);
+                    
+                    if (loginResult.success) {
+                        this.setAuthState(loginResult.user, loginResult.token);
+                        this.showSuccess('Zalogowano pomyślnie (tryb offline)');
+                        
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        this.showError(loginResult.message);
+                    }
+                } else {
+                    throw apiError;
+                }
             }
 
         } catch (error) {
             console.error('Login error:', error);
-            this.showError('Wystąpił błąd podczas logowania');
+            this.showError(error.message || 'Wystąpił błąd podczas logowania');
         } finally {
             this.hideLoading(event.target);
         }
@@ -200,23 +221,43 @@ class AuthManager {
             // Pokaż loading
             this.showLoading(event.target);
 
-            // Symulacja rejestracji (później połączenie z API)
-            const registerResult = await this.simulateRegister(userData);
-            
-            if (registerResult.success) {
-                this.showSuccess('Konto utworzone! Sprawdź email w celu weryfikacji.');
+            // Prawdziwa rejestracja przez API
+            try {
+                // Konwertuj dane na format API
+                const apiUserData = window.DataAdapter.userToApi(userData);
+                
+                const user = await window.apiClient.register(apiUserData);
+                
+                this.showSuccess('Konto utworzone pomyślnie!');
                 
                 // Przełącz na logowanie po 2 sekundach
                 setTimeout(() => {
                     this.switchToLogin();
                 }, 2000);
-            } else {
-                this.showError(registerResult.message);
+                
+            } catch (apiError) {
+                // Jeśli API nie działa (offline), zapisz lokalnie
+                if (apiError.message === 'OFFLINE') {
+                    console.warn('API offline, saving user locally');
+                    const registerResult = await this.simulateRegister(userData);
+                    
+                    if (registerResult.success) {
+                        this.showSuccess('Konto utworzone lokalnie (będzie zsynchronizowane po połączeniu)');
+                        
+                        setTimeout(() => {
+                            this.switchToLogin();
+                        }, 2000);
+                    } else {
+                        this.showError(registerResult.message);
+                    }
+                } else {
+                    throw apiError;
+                }
             }
 
         } catch (error) {
             console.error('Registration error:', error);
-            this.showError('Wystąpił błąd podczas rejestracji');
+            this.showError(error.message || 'Wystąpił błąd podczas rejestracji');
         } finally {
             this.hideLoading(event.target);
         }

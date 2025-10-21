@@ -2,12 +2,17 @@
 
 **Fete Lite** to nowoczesna Progressive Web App (PWA) do organizowania wydarzeń społecznych. Aplikacja oferuje pełną funkcjonalność offline, intuicyjny interfejs użytkownika oraz zaawansowane funkcje organizacyjne.
 
+> **🆕 NOWOŚĆ!** Aplikacja została zintegrowana z backendem PHP REST API!  
+> Zobacz: [`INTEGRATION_GUIDE.md`](INTEGRATION_GUIDE.md) i [`QUICKSTART_API.md`](QUICKSTART_API.md)
+
 ---
 
 ## 📱 Cechy Aplikacji
 
 ### ✨ Główne Funkcjonalności
 - **📅 Tworzenie wydarzeń** - Łatwe dodawanie wydarzeń z pełną walidacją
+- **🔐 JWT Authentication** - Bezpieczne logowanie z auto-refresh tokenów
+- **☁️ Cloud Sync** - Synchronizacja danych między urządzeniami (przez API)
 - **🗺️ Integracja z mapami** - OpenStreetMap/Leaflet (bezpłatna alternatywa dla Google Maps)
 - **📍 Geolokalizacja** - Automatyczne wykrywanie lokalizacji
 - **📱 QR Code** - Generowanie kodów QR do udostępniania wydarzeń
@@ -15,16 +20,17 @@
 - **🔔 Powiadomienia push** - Przypomnienia o nadchodzących wydarzeniach
 - **🌙 Ciemny motyw** - Automatyczne przełączanie według preferencji systemowych
 - **🌐 Wielojęzyczność** - Polski i angielski (z automatyczną detekcją)
-- **📶 Tryb offline** - Pełna funkcjonalność bez internetu
+- **📶 Tryb offline** - Pełna funkcjonalność bez internetu z kolejką sync
 - **📊 Sample data** - Przykładowe wydarzenia do testowania
 
 ### 🔧 Techniczne Cechy PWA
 - **⚡ Szybkie ładowanie** - Service Worker z cache-first strategy
 - **📲 Instalowalna** - Możliwość instalacji jak natywna aplikacja
 - **🎨 Responsywna** - Mobile-first design z Material Design
-- **🔒 Bezpieczna** - HTTPS ready
-- **💾 Offline storage** - localStorage z fallbackami
-- **🔄 Synchronizacja** - Automatyczna synchronizacja po powrocie online
+- **🔒 Bezpieczna** - HTTPS ready, JWT authentication
+- **💾 Hybrid storage** - API + localStorage cache z offline fallback
+- **🔄 Auto synchronizacja** - Offline queue sync po powrocie online
+- **🔃 Token refresh** - Automatyczne odświeżanie wygasłych tokenów
 
 ## 🚀 Szybki Start
 
