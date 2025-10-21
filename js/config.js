@@ -14,10 +14,10 @@ class Config {
     
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('192.168.')) {
       // Lokalne środowisko - używaj Railway backend
-      return 'https://backend-production-bb92.up.railway.app/api/v1';
+      return 'https://backend-production-bb92.up.railway.app';
     } else {
       // Produkcja - również Railway backend
-      return 'https://backend-production-bb92.up.railway.app/api/v1';
+      return 'https://backend-production-bb92.up.railway.app';
     }
   }
 

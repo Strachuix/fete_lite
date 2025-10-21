@@ -35,7 +35,52 @@
     <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
     
     <!-- QR Code library - defer dla lepszej wydajności -->
-    <script defer src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- QR Code library - multiple fallback sources -->
+    <script>
+    window.loadQRLibrary = function() {
+      return new Promise((resolve, reject) => {
+        if (window.QRCode) {
+          resolve();
+          return;
+        }
+        
+        const cdnSources = [
+          'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/lib/browser.js',
+          'https://unpkg.com/qrcode@1.5.3/lib/browser.js',
+          './js/qrcode.min.js'
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript() {
+          if (currentIndex >= cdnSources.length) {
+            reject(new Error('Failed to load QR library'));
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = cdnSources[currentIndex];
+          
+          script.onload = resolve;
+          script.onerror = () => {
+            currentIndex++;
+            tryLoadScript();
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryLoadScript();
+      });
+    };
+    
+    // Load QR library immediately for event details page
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!window.QRCode) {
+        window.loadQRLibrary().catch(console.error);
+      }
+    });
+    </script>
     <!-- Leaflet JS dla map - defer, ładowane asynchronicznie -->
     <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -280,7 +325,6 @@
     <div id="navigation-container"></div>
     
     <!-- Skrypty -->
-    <script src="/js/qrcode.min.js"></script>
     <script src="/js/i18n.js"></script>
     <!-- Configuration -->
     <script src="/js/config.js"></script>

@@ -6,7 +6,7 @@
 class ApiClient {
   constructor(baseURL = null) {
     // Użyj Config jeśli dostępny, w przeciwnym razie fallback
-    this.baseURL = baseURL || (window.Config ? window.Config.getApiUrl() : 'http://localhost:8000/api/v1');
+    this.baseURL = baseURL || (window.Config ? window.Config.getApiUrl() : 'http://localhost:8000');
     this.token = this.getToken();
     this.refreshToken = this.getRefreshToken();
     this.isRefreshing = false;
@@ -326,8 +326,10 @@ class ApiClient {
   async healthCheck() {
     try {
       const response = await this.request('/health', { skipAuth: true });
-      return response.status === 'ok';
+      // Backend zwraca: {"success":true,"data":{"status":"healthy",...}}
+      return response.success && response.data && response.data.status === 'healthy';
     } catch (error) {
+      console.error('[ApiClient] Health check failed:', error);
       return false;
     }
   }

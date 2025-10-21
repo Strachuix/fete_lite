@@ -31,12 +31,12 @@ class QRManager {
 
 
 
-      // Najpierw spróbuj lokalnej biblioteki, potem CDN
+      // Multiple reliable CDN sources with local fallback
       const allUrls = [
-        './js/qrcode.min.js', // Lokalna kopia
         'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
-        'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+        'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js', 
+        './js/qrcode.min.js', // Lokalna kopia jako fallback
+        'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'
       ];
 
       for (const url of allUrls) {
@@ -86,8 +86,15 @@ class QRManager {
 
   // Stwórz fallback implementację QR (bez biblioteki zewnętrznej)
   createFallbackQRImplementation() {
+    // Nie nadpisuj window.QRCode jeśli już istnieje
+    if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+      console.log('[QR] External QRCode library already available');
+      return;
+    }
+    
     // Prosta implementacja fallback używająca zewnętrznego API
-    window.QRCode = {
+    // Zapisz jako właściwość klasy zamiast globalnej zmiennej
+    this.fallbackQR = {
       toCanvas: async (canvas, text, options = {}) => {
         try {
           // Użyj publicznego API do generowania QR
@@ -131,11 +138,11 @@ class QRManager {
 
   // Stwórz wrapper kompatybilny z różnymi bibliotekami QR
   createQRCodeWrapper() {
-    if (window.QRCode && window.QRCode.toCanvas) {
+    if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
       // npm qrcode biblioteka - już kompatybilna
       console.log('[QR] Using npm qrcode library');
       return;
-    } else if (window.QRCode) {
+    } else if (window.QRCode && !window.QRCode.toCanvas) {
       // qrcodejs biblioteka - potrzebuje wrappera
       console.log('[QR] Using qrcodejs library, creating wrapper');
       
@@ -144,7 +151,7 @@ class QRManager {
       // Stwórz wrapper z metodami jak npm qrcode
       const self = this;
       
-      window.QRCode = {
+      this.wrappedQR = {
         toCanvas: (canvas, text, options = {}) => {
           return new Promise((resolve, reject) => {
             try {
@@ -200,7 +207,7 @@ class QRManager {
           return new Promise((resolve, reject) => {
             try {
               const canvas = document.createElement('canvas');
-              window.QRCode.toCanvas(canvas, text, options).then(() => {
+              this.wrappedQR.toCanvas(canvas, text, options).then(() => {
                 resolve(canvas.toDataURL());
               }).catch(reject);
             } catch (error) {
@@ -210,6 +217,26 @@ class QRManager {
         }
       };
     }
+  }
+
+  // Pobierz aktualną implementację QR
+  getQRImplementation() {
+    // Sprawdź czy zewnętrzna biblioteka jest dostępna
+    if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+      return window.QRCode;
+    }
+    
+    // Sprawdź czy mamy wrapper
+    if (this.wrappedQR) {
+      return this.wrappedQR;
+    }
+    
+    // Sprawdź czy mamy fallback
+    if (this.fallbackQR) {
+      return this.fallbackQR;
+    }
+    
+    return null;
   }
   
   // Konwersja poziomów błędów
@@ -322,8 +349,13 @@ class QRManager {
         const canvas = document.createElement('canvas');
         container.appendChild(canvas);
 
-        // Generuj QR kod
-        await QRCode.toCanvas(canvas, data, qrOptions);
+        // Generuj QR kod używając aktualnej implementacji
+        const qrImpl = this.getQRImplementation();
+        if (!qrImpl) {
+          throw new Error('No QR implementation available');
+        }
+        
+        await qrImpl.toCanvas(canvas, data, qrOptions);
         
         console.log('[QR] QR code generated successfully');
 

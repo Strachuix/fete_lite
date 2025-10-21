@@ -51,15 +51,45 @@
     <script>
     // Load QR library only when needed
     window.loadQRLibrary = function() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         if (window.QRCode) {
           resolve();
           return;
         }
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
-        script.onload = resolve;
-        document.head.appendChild(script);
+        
+        // Try multiple CDN sources for reliability
+        const cdnSources = [
+          'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/lib/browser.js',
+          'https://unpkg.com/qrcode@1.5.3/lib/browser.js',
+          './js/qrcode.min.js' // Local fallback
+        ];
+        
+        let currentIndex = 0;
+        
+        function tryLoadScript() {
+          if (currentIndex >= cdnSources.length) {
+            reject(new Error('Failed to load QR library from all sources'));
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.src = cdnSources[currentIndex];
+          
+          script.onload = () => {
+            console.log('[QR] Loaded from:', cdnSources[currentIndex]);
+            resolve();
+          };
+          
+          script.onerror = () => {
+            console.warn('[QR] Failed to load from:', cdnSources[currentIndex]);
+            currentIndex++;
+            tryLoadScript();
+          };
+          
+          document.head.appendChild(script);
+        }
+        
+        tryLoadScript();
       });
     };
     </script>
