@@ -79,6 +79,69 @@ Po otwarciu aplikacji w przeglądarce:
 2. Lub użyj menu przeglądarki > "Zainstaluj Fete Lite"
 3. Aplikacja pojawi się na pulpicie/ekranie głównym
 
+## 🌍 Production Deployment
+
+### Backend (Separate Repository)
+
+**Quick Deploy na Railway.app:**
+
+```bash
+# 1. Skopiuj folder Fete_backend/ do nowego GitHub repo
+cd Fete_backend
+git init && git add . && git commit -m "Backend ready"
+git remote add origin https://github.com/username/fete-lite-backend.git
+git push -u origin main
+
+# 2. Deploy on Railway
+railway login
+railway new  # Connect GitHub repo
+railway add mysql
+railway deploy
+
+# 3. Set environment variables
+railway variables set JWT_SECRET=$(openssl rand -base64 32)
+railway variables set CORS_ORIGINS=https://your-frontend.netlify.app
+```
+
+**Gotowy backend w 5 minut!** ✅ See: [`BACKEND_DEPLOYMENT.md`](BACKEND_DEPLOYMENT.md)
+
+### Frontend (This Repository)
+
+**Deploy na Netlify:**
+
+```bash
+# Option A: Drag & drop
+# Zip this folder and drag to netlify.com/drop
+
+# Option B: GitHub integration
+git remote add origin https://github.com/username/fete-lite-frontend.git
+git push -u origin main
+# Then connect on Netlify dashboard
+
+# Option C: Netlify CLI
+npm i -g netlify-cli
+netlify login
+netlify init
+netlify deploy --prod
+```
+
+**Alternative platforms:**
+- **Vercel**: `vercel --prod`
+- **GitHub Pages**: Enable in repo settings
+- **Firebase Hosting**: `firebase deploy`
+
+### Update API URL
+
+Po deployment backendu, w `js/api-client.js` zmień:
+
+```javascript
+// From:
+this.baseURL = 'http://localhost:8000/api/v1';
+
+// To:  
+this.baseURL = 'https://your-backend.railway.app/api/v1';
+```
+
 ## 📋 Struktura Projektu
 
 ```

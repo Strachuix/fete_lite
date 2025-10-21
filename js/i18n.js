@@ -47,7 +47,6 @@ class I18n {
         'nav.login': 'Logowanie',
         
         // Strona główna
-        'home.welcome': 'Witaj w Fete Lite!',
         'home.description': 'Organizuj wydarzenia towarzyskie szybko i prosto',
         'home.createEvent': 'Utwórz wydarzenie',
         'home.myEvents': 'Moje wydarzenia',
@@ -488,7 +487,6 @@ class I18n {
         'nav.login': 'Login',
         
         // Home page
-        'home.welcome': 'Welcome to Fete Lite!',
         'home.description': 'Organize social events quickly and easily',
         'home.createEvent': 'Create event',
         'home.myEvents': 'My events',

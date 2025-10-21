@@ -25,10 +25,16 @@
     <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
     <link rel="apple-touch-icon" href="/images/icons/icon-192.png">
     
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/modern-effects.css">
-    <link rel="stylesheet" href="/css/responsive.css">
+    <!-- Critical CSS inline -->
+    <style>
+    *{box-sizing:border-box;margin:0;padding:0}html{font-size:16px}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:1rem;line-height:1.5;color:#1e293b;background:#f8fafc;min-height:100vh}.main-content{padding:1.5rem 1rem;max-width:800px;margin:0 auto}.form-container{max-width:700px;margin:0 auto;padding:1rem}.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;border:none;border-radius:.75rem;cursor:pointer;font-weight:600;min-height:48px}.btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff}.form-input,.form-textarea{width:100%;padding:.75rem;border:2px solid #e2e8f0;border-radius:.75rem;font-size:1rem}
+    </style>
+    
+    <!-- Non-critical CSS loaded async -->
+    <link rel="preload" href="/css/style.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
+    <link rel="preload" href="/css/modern-effects.css" as="style" onload="this.rel='stylesheet'">
+    <link rel="preload" href="/css/responsive.css" as="style" onload="this.rel='stylesheet'">
     
     <!-- Leaflet Maps - preload dla szybszego ładowania -->
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" 
@@ -41,8 +47,22 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
             crossorigin=""></script>
     
-    <!-- QR Code library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <!-- QR Code library - load async -->
+    <script>
+    // Load QR library only when needed
+    window.loadQRLibrary = function() {
+      return new Promise((resolve) => {
+        if (window.QRCode) {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+        script.onload = resolve;
+        document.head.appendChild(script);
+      });
+    };
+    </script>
 </head>
 <body>
     <!-- Komunikat offline -->
@@ -627,6 +647,8 @@
     <!-- Skrypty -->
     <script src="/js/i18n.js"></script>
     <script src="/js/event-themes.js"></script>
+    <!-- Configuration -->
+    <script src="/js/config.js"></script>
     <!-- API Integration -->
     <script src="/js/api-client.js"></script>
     <script src="/js/data-adapter.js"></script>

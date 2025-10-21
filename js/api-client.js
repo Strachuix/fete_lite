@@ -4,8 +4,9 @@
  */
 
 class ApiClient {
-  constructor(baseURL = 'http://localhost:8000/api/v1') {
-    this.baseURL = baseURL;
+  constructor(baseURL = null) {
+    // Użyj Config jeśli dostępny, w przeciwnym razie fallback
+    this.baseURL = baseURL || (window.Config ? window.Config.getApiUrl() : 'http://localhost:8000/api/v1');
     this.token = this.getToken();
     this.refreshToken = this.getRefreshToken();
     this.isRefreshing = false;

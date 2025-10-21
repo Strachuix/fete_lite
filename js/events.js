@@ -1,6 +1,78 @@
 // Fete Lite - Logika wydarzeń
 // Funkcje do tworzenia, edycji i zarządzania wydarzeniami
 
+// Fallback for i18n function if not loaded yet
+if (typeof window.t === 'undefined') {
+  window.t = function(key, replacements) {
+    // Detect language preference (fallback to Polish)
+    const lang = navigator.language.startsWith('en') ? 'en' : 'pl';
+    
+    // Multilingual fallbacks
+    const fallbacks = {
+      'loading.events': {
+        pl: 'Ładowanie wydarzeń...',
+        en: 'Loading events...'
+      },
+      'validation.titleRequired': {
+        pl: 'Tytuł jest wymagany',
+        en: 'Title is required'
+      },
+      'validation.titleTooLong': {
+        pl: 'Tytuł jest za długi',
+        en: 'Title is too long'
+      },
+      'validation.startDateRequired': {
+        pl: 'Data rozpoczęcia jest wymagana',
+        en: 'Start date is required'
+      },
+      'home.noEvents': {
+        pl: 'Brak wydarzeń',
+        en: 'No events'
+      },
+      'home.noEventsDesc': {
+        pl: 'Utwórz swoje pierwsze wydarzenie!',
+        en: 'Create your first event!'
+      },
+      'validation.locationRequired': {
+        pl: 'Lokalizacja jest wymagana',
+        en: 'Location is required'
+      },
+      'validation.descriptionTooLong': {
+        pl: 'Opis jest za długi',
+        en: 'Description is too long'
+      },
+      'error.loadEvents': {
+        pl: 'Błąd ładowania wydarzeń',
+        en: 'Error loading events'
+      },
+      'success.eventCreated': {
+        pl: 'Wydarzenie utworzone pomyślnie',
+        en: 'Event created successfully'
+      },
+      'success.eventUpdated': {
+        pl: 'Wydarzenie zaktualizowane',
+        en: 'Event updated'
+      },
+      'success.eventDeleted': {
+        pl: 'Wydarzenie usunięte',
+        en: 'Event deleted'
+      },
+      'error.tryAgain': {
+        pl: 'Spróbuj ponownie',
+        en: 'Try again'
+      }
+    };
+    
+    const translation = fallbacks[key];
+    if (translation && translation[lang]) {
+      return translation[lang];
+    }
+    
+    // Return the key if no translation found
+    return key;
+  };
+}
+
 class EventManager {
   constructor() {
     this.currentFilter = 'all';

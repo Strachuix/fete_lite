@@ -1,38 +1,38 @@
 // Service Worker dla Fete Lite PWA
 // Wersja 1.0.0
 
-const CACHE_VERSION = '1.1.5'
+const CACHE_VERSION = '1.2.0'
 const CACHE_NAME = `fete-lite-v${CACHE_VERSION}`;
 const STATIC_CACHE = `fete-lite-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `fete-lite-dynamic-v${CACHE_VERSION}`;
+const IMAGE_CACHE = `fete-lite-images-v${CACHE_VERSION}`;
+const API_CACHE = `fete-lite-api-v${CACHE_VERSION}`;
 
 console.log('[SW] Service Worker version:', CACHE_VERSION);
 
-// Pliki do cache'owania przy instalacji (tylko lokalne pliki)
-const STATIC_FILES = [
+// Critical files to cache immediately (Core functionality only)
+const CRITICAL_FILES = [
   './',
   './index.html',
+  './css/critical.css',
+  './js/main.js',
+  './js/config.js',
+  './js/storage.js',
+  './js/events.js',
+  './manifest.json'
+];
+
+// Secondary files to cache (loaded on demand)
+const STATIC_FILES = [
   './create-event.html', 
   './event-details.html',
   './auth.html',
   './settings.html',
-  './css/core.css',
   './css/style.css',
-  './css/auth.css',
-  './css/settings.css',
-  './css/events-list.css',
-  './css/event-details.css',
-  './css/event-form.css',
-  './css/style-small.css',
-  './css/style-medium.css',
-  './css/style-large.css',
   './css/modern-effects.css',
   './css/dark-mode.css',
   './css/responsive.css',
   './css/standalone.css',
-  './js/main.js',
-  './js/events.js',
-  './js/storage.js',
   './js/qr.js',
   './js/qrcode.min.js',
   './js/ics-export.js',
@@ -51,12 +51,11 @@ const STATIC_FILES = [
   './js/update-checker.js',
   './js/create-event.js',
   './js/event-details.js',
-  './js/dynamic-css-loader.js',
+  './js/image-optimizer.js',
   './images/logo.svg',
   './images/icons/icon-192.png',
   './images/icons/icon-512.png',
-  './images/icons/maskable-icon.png',
-  './manifest.json'
+  './images/icons/maskable-icon.png'
 ];
 
 // Instalacja Service Workera
@@ -66,17 +65,19 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
-
-        // Dodaj pliki jeden po drugim, aby obsłużyć błędy jednotliwych plików
-        return addFilesToCache(cache, STATIC_FILES);
+        console.log('[SW] ⚡ Caching critical files first...');
+        return addFilesToCache(cache, CRITICAL_FILES);
       })
       .then(() => {
-
-        return self.skipWaiting(); // Wymuszenie aktywacji nowej wersji
+        // Cache secondary files in background after critical ones
+        console.log('[SW] 📦 Caching secondary files...');
+        caches.open(DYNAMIC_CACHE).then(cache => {
+          return addFilesToCache(cache, STATIC_FILES);
+        });
+        return self.skipWaiting();
       })
       .catch(error => {
-        console.error('[SW] Błąd podczas instalacji:', error);
-        // Kontynuuj instalację mimo błędów
+        console.error('[SW] ❌ Installation failed:', error);
         return self.skipWaiting();
       })
   );
@@ -119,11 +120,12 @@ self.addEventListener('activate', event => {
         return Promise.all(
           cacheNames
             .filter(cacheName => {
-              // Usuń stare wersje cache
-              return cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE;
+              // Keep only current caches
+              const validCaches = [STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE, API_CACHE];
+              return !validCaches.includes(cacheName);
             })
             .map(cacheName => {
-              console.log('[SW] Usuwanie starego cache:', cacheName);
+              console.log('[SW] 🗑️ Cleaning old cache:', cacheName);
               return caches.delete(cacheName);
             })
         );
@@ -150,50 +152,123 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Główna funkcja obsługi żądań
+// Performance-optimized request handler
 async function handleRequest(request) {
   const url = new URL(request.url);
   
   try {
-    // DEVELOPMENT MODE: Network First dla plików CSS/JS żeby widzieć zmiany
-    if (isDevelopmentMode() && (url.pathname.endsWith('.css') || url.pathname.endsWith('.js'))) {
-      console.log('[SW] [DEV] Network First dla:', url.pathname);
-      return await networkFirst(request);
+    // Images: Cache first with long-term storage
+    if (isImageRequest(request)) {
+      return await imageFirst(request);
     }
     
-    // Strategia Cache First dla plików statycznych
+    // API requests: Network first with short cache
+    if (isApiRequest(request)) {
+      return await apiStrategy(request);
+    }
+    
+    // Critical files: Cache first with immediate fallback
+    if (isCriticalFile(request)) {
+      return await criticalFirst(request);
+    }
+    
+    // Static resources: Stale while revalidate
     if (isStaticResource(request)) {
-      return await cacheFirst(request);
+      return await staleWhileRevalidate(request);
     }
     
-    // Strategia Network First dla API i dynamicznych zasobów
-    if (isDynamicResource(request)) {
+    // HTML pages: Network first for fresh content
+    if (url.pathname.endsWith('.html') || url.pathname === '/') {
       return await networkFirst(request);
     }
     
-    // Domyślnie Cache First
+    // Default: Cache first
     return await cacheFirst(request);
     
   } catch (error) {
-    console.error('[SW] Błąd obsługi żądania:', error);
+    console.error('[SW] ❌ Request failed:', error);
     return await getOfflineFallback(request);
   }
 }
 
-// Strategia Cache First
+// Image-optimized strategy
+async function imageFirst(request) {
+  const cache = await caches.open(IMAGE_CACHE);
+  const cachedResponse = await cache.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  const networkResponse = await fetch(request);
+  if (networkResponse.ok) {
+    cache.put(request, networkResponse.clone());
+  }
+  return networkResponse;
+}
+
+// API strategy with short-term cache
+async function apiStrategy(request) {
+  const cache = await caches.open(API_CACHE);
+  
+  try {
+    const networkResponse = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Network timeout')), 3000)
+      )
+    ]);
+    
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch {
+    return await cache.match(request) || new Response('Offline', { status: 503 });
+  }
+}
+
+// Critical files strategy
+async function criticalFirst(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  const networkResponse = await fetch(request);
+  if (networkResponse.ok) {
+    const cache = await caches.open(STATIC_CACHE);
+    cache.put(request, networkResponse.clone());
+  }
+  return networkResponse;
+}
+
+// Stale while revalidate strategy
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(DYNAMIC_CACHE);
+  const cachedResponse = await cache.match(request);
+  
+  const fetchPromise = fetch(request).then(response => {
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  });
+  
+  return cachedResponse || fetchPromise;
+}
+
+// Enhanced Cache First
 async function cacheFirst(request) {
   try {
     const cachedResponse = await caches.match(request);
     
     if (cachedResponse) {
-      console.log('[SW] ✓ Zwracam z cache:', request.url);
       return cachedResponse;
     }
     
-    console.log('[SW] Nie ma w cache, pobieram z sieci:', request.url);
     const networkResponse = await fetch(request);
     
-    // Cache'uj tylko żądania GET z pozytywną odpowiedzią
     if (networkResponse.ok && request.method === 'GET') {
       try {
         const cache = await caches.open(STATIC_CACHE);
@@ -319,6 +394,24 @@ function isDynamicResource(request) {
   return (
     url.pathname.includes('/api/') ||
     url.searchParams.has('dynamic')
+  );
+}
+
+// Performance helper functions
+function isImageRequest(request) {
+  return request.destination === 'image' || 
+         /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(request.url);
+}
+
+function isApiRequest(request) {
+  return request.url.includes('/api/') || 
+         request.url.includes('railway.app');
+}
+
+function isCriticalFile(request) {
+  const url = new URL(request.url);
+  return CRITICAL_FILES.some(file => 
+    url.pathname === file || url.pathname.endsWith(file)
   );
 }
 
