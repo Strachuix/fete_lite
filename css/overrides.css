@@ -1,0 +1,12 @@
+/* Overrides for event search persistent border */
+input#event-search,
+#event-search.search-input {
+  border: 2px solid var(--color-border) !important;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+body.dark-mode input#event-search,
+body.dark-mode #event-search.search-input {
+  border-color: #444 !important;
+}
