@@ -847,6 +847,19 @@ function showJoinModal(event) {
     // Show modal
     modal.style.display = 'flex';
     setTimeout(() => modal.classList.add('show'), 10);
+
+    // If event allows companions, show the checkbox in the join modal
+    const bringCompanionGroup = document.getElementById('bring-companion-group');
+    const bringCompanionCheckbox = document.getElementById('bring-companion');
+    if (bringCompanionGroup) {
+        if (event.allowCompanion) {
+            bringCompanionGroup.style.display = 'block';
+            if (bringCompanionCheckbox) bringCompanionCheckbox.checked = false;
+        } else {
+            bringCompanionGroup.style.display = 'none';
+            if (bringCompanionCheckbox) bringCompanionCheckbox.checked = false;
+        }
+    }
     
     // Handle modal close
     const closeButtons = modal.querySelectorAll('.modal-close');
@@ -897,8 +910,15 @@ function confirmJoinEvent(event) {
         id: Date.now().toString(),
         name: name,
         email: email || null,
+        companion: false,
         joinedAt: new Date().toISOString()
     };
+
+    // Read companion checkbox if present
+    const bringCompanionEl = document.getElementById('bring-companion');
+    if (bringCompanionEl) {
+        participant.companion = !!bringCompanionEl.checked;
+    }
     
     // Get existing participants
     let participants = [];
@@ -917,13 +937,26 @@ function confirmJoinEvent(event) {
         closeJoinModal();
         return;
     }
+
+    // Capacity check - count existing people including companions
+    const existingPeopleCount = participants.reduce((sum, p) => {
+        return sum + 1 + (p.companion ? 1 : 0);
+    }, 0);
+
+    const newParticipantCount = 1 + (participant.companion ? 1 : 0);
+    if (event.maxParticipants && Number.isInteger(event.maxParticipants)) {
+        if (existingPeopleCount + newParticipantCount > event.maxParticipants) {
+            showNotification('Przekroczono limit uczestników. Nie można dołączyć z wybraną opcją towarzyszącą.', 'error');
+            return;
+        }
+    }
     
     // Add participant
     participants.push(participant);
     localStorage.setItem(`event_participants_${event.id}`, JSON.stringify(participants));
     
     // Update participant count display if exists
-    updateParticipantCount(event.id, participants.length);
+    updateParticipantCount(event.id);
     
     // Show success message
     showNotification('Pomyślnie dołączono do wydarzenia!', 'success');
@@ -944,9 +977,28 @@ function confirmJoinEvent(event) {
 }
 
 function updateParticipantCount(eventId, count) {
-    // Update participant count in the UI if element exists
-    const countElement = document.getElementById('participant-count');
-    if (countElement) {
-        countElement.textContent = count;
+    // Count total people including companions and update heading
+    const participantsData = localStorage.getItem(`event_participants_${eventId}`);
+    let peopleCount = 0;
+    if (participantsData) {
+        try {
+            const participants = JSON.parse(participantsData);
+            peopleCount = participants.reduce((sum, p) => sum + 1 + (p.companion ? 1 : 0), 0);
+        } catch (e) {
+            peopleCount = 0;
+        }
+    }
+
+    // Update the section heading to include count (i18n-aware if possible)
+    const participantsSection = document.getElementById('event-participants-section');
+    if (participantsSection) {
+        const heading = participantsSection.querySelector('h3');
+        if (heading) {
+            try {
+                heading.textContent = window.t ? window.t('details.participantCount', { count: peopleCount }) : `Uczestnicy (${peopleCount})`;
+            } catch (e) {
+                heading.textContent = `Uczestnicy (${peopleCount})`;
+            }
+        }
     }
 }

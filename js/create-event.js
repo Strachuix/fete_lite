@@ -30,54 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Initialize duration suggestion buttons
-function initDurationButtons() {
-    const durationButtons = document.querySelectorAll('.btn-duration');
-    const startDateInput = document.getElementById('event-start-date');
-    const startTimeInput = document.getElementById('event-start-time');
-    const endDateInput = document.getElementById('event-end-date');
-    const endTimeInput = document.getElementById('event-end-time');
-    
-    durationButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const hours = parseInt(this.dataset.hours);
-            
-            // Check if start date and time are set
-            if (!startDateInput.value || !startTimeInput.value) {
-                showNotification('Najpierw ustaw datę i godzinę rozpoczęcia', 'warning');
-                return;
-            }
-            
-            // Create start datetime
-            const startDateTime = new Date(`${startDateInput.value}T${startTimeInput.value}`);
-            
-            // Add duration
-            const endDateTime = new Date(startDateTime.getTime() + (hours * 60 * 60 * 1000));
-            
-            // Format end date and time
-            const endDate = endDateTime.toISOString().split('T')[0];
-            const endTime = endDateTime.toTimeString().substring(0, 5);
-            
-            // Set values
-            endDateInput.value = endDate;
-            endTimeInput.value = endTime;
-            
-            // Visual feedback
-            this.classList.add('btn-duration-active');
-            setTimeout(() => {
-                this.classList.remove('btn-duration-active');
-            }, 300);
-            
-            // Show notification
-            const durationText = hours === 1 ? '1 godzinę' : 
-                                hours < 5 ? `${hours} godziny` : 
-                                hours === 12 ? 'pół dnia' :
-                                hours === 24 ? 'cały dzień' : 
-                                `${hours} godzin`;
-            showNotification(`Ustawiono czas trwania: ${durationText}`, 'success');
-        });
-    });
-}
 
 // Initialize form progress bar
 function initFormProgress() {
@@ -445,7 +397,17 @@ function getFormData() {
         endDate: document.getElementById('event-end-date').value,
         endTime: document.getElementById('event-end-time').value,
         location: document.getElementById('event-location').value,
-        tags: Array.from(document.querySelectorAll('.tag')).map(tag => tag.textContent.replace('×', '').trim())
+        tags: Array.from(document.querySelectorAll('.tag')).map(tag => tag.textContent.replace('×', '').trim()),
+        maxParticipants: (function(){
+            const v = document.getElementById('max-participants');
+            if (!v) return null;
+            const n = parseInt(v.value);
+            return Number.isInteger(n) && n > 0 ? n : null;
+        })(),
+        allowCompanion: (function(){
+            const el = document.getElementById('allow-companion');
+            return el ? el.checked : false;
+        })()
     };
 }
 
@@ -635,6 +597,13 @@ function createEventFromForm(formData) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
     };
+
+        // Read allowCompanion checkbox from formData (backwards-compatible)
+        try {
+            event.allowCompanion = formData.get('allowCompanion') === 'on';
+        } catch (e) {
+            event.allowCompanion = false;
+        }
 
     return event;
 }

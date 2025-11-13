@@ -1134,52 +1134,105 @@ if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
   console.log('- location.reload(true) - standardowe przeładowanie');
 }
 
-// Inicjalizacja przycisku przełączania filtrów (tylko na index.html)
+// Open filters inside a modal instead of inline expansion
 document.addEventListener('DOMContentLoaded', () => {
   const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
-  const filtersContainer = document.getElementById('filters-container');
-  
-  if (toggleFiltersBtn && filtersContainer) {
-    let filtersVisible = false;
-    
+  const filtersModal = document.getElementById('filters-modal');
+  const filtersModalClose = document.getElementById('filters-modal-close');
+  const filtersModalCancel = document.getElementById('filters-modal-cancel');
+  const filtersModalApply = document.getElementById('filters-modal-apply');
+
+  if (toggleFiltersBtn && filtersModal) {
+    const setBtnToOpen = () => {
+      const btnText = toggleFiltersBtn.querySelector('span:not(.btn-icon)');
+      const btnIcon = toggleFiltersBtn.querySelector('.btn-icon');
+      if (btnText) {
+        btnText.setAttribute('data-i18n', 'filter.showFilters');
+        btnText.textContent = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('filter.showFilters') : 'Dodaj filtry';
+      }
+      if (btnIcon) btnIcon.textContent = '🔽';
+    };
+
+    const setBtnToClose = () => {
+      const btnText = toggleFiltersBtn.querySelector('span:not(.btn-icon)');
+      const btnIcon = toggleFiltersBtn.querySelector('.btn-icon');
+      if (btnText) {
+        btnText.setAttribute('data-i18n', 'filter.hideFilters');
+        btnText.textContent = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('filter.hideFilters') : 'Zamknij filtry';
+      }
+      if (btnIcon) btnIcon.textContent = '❌';
+    };
+
+    const openModal = () => {
+      filtersModal.style.display = 'flex';
+      // small delay to allow CSS transitions
+      setTimeout(() => {
+        filtersModal.classList.add('show');
+        filtersModal.setAttribute('aria-hidden', 'false');
+        // autofocus first focusable element inside modal
+        const first = filtersModal.querySelector('select, input, button, [tabindex]:not([tabindex="-1"])');
+        if (first && typeof first.focus === 'function') first.focus();
+        // trap focus inside modal
+        document.addEventListener('focus', focusTrap, true);
+      }, 10);
+      setBtnToClose();
+    };
+
+    const closeModal = () => {
+      filtersModal.classList.remove('show');
+      filtersModal.setAttribute('aria-hidden', 'true');
+      setTimeout(() => { filtersModal.style.display = 'none'; }, 300);
+      setBtnToOpen();
+      // remove focus trap and restore focus to trigger button
+      document.removeEventListener('focus', focusTrap, true);
+      if (toggleFiltersBtn && typeof toggleFiltersBtn.focus === 'function') toggleFiltersBtn.focus();
+    };
+
     toggleFiltersBtn.addEventListener('click', () => {
-      filtersVisible = !filtersVisible;
-      
-      if (filtersVisible) {
-        filtersContainer.style.display = 'block';
-        // Animacja wjazdu
-        setTimeout(() => {
-          filtersContainer.classList.add('show');
-        }, 10);
-        
-        // Zmień tekst i ikonę przycisku
-        const btnText = toggleFiltersBtn.querySelector('span:not(.btn-icon)');
-        const btnIcon = toggleFiltersBtn.querySelector('.btn-icon');
-        if (btnText) {
-          btnText.setAttribute('data-i18n', 'filter.hideFilters');
-          btnText.textContent = i18n.t('filter.hideFilters');
-        }
-        if (btnIcon) {
-          btnIcon.textContent = '🔼';
-        }
-      } else {
-        filtersContainer.classList.remove('show');
-        // Ukryj po animacji
-        setTimeout(() => {
-          filtersContainer.style.display = 'none';
-        }, 300);
-        
-        // Przywróć oryginalny tekst i ikonę
-        const btnText = toggleFiltersBtn.querySelector('span:not(.btn-icon)');
-        const btnIcon = toggleFiltersBtn.querySelector('.btn-icon');
-        if (btnText) {
-          btnText.setAttribute('data-i18n', 'filter.showFilters');
-          btnText.textContent = i18n.t('filter.showFilters');
-        }
-        if (btnIcon) {
-          btnIcon.textContent = '🔽';
-        }
+      const hidden = filtersModal.getAttribute('aria-hidden') !== 'false';
+      if (hidden) openModal(); else closeModal();
+    });
+
+    if (filtersModalClose) filtersModalClose.addEventListener('click', closeModal);
+    if (filtersModalCancel) filtersModalCancel.addEventListener('click', closeModal);
+
+    if (filtersModalApply) {
+      filtersModalApply.addEventListener('click', () => {
+        // dispatch change events so existing listeners will apply filters
+        ['events-filter', 'theme-filter', 'sort-events'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+        closeModal();
+      });
+    }
+
+    // Close when clicking backdrop
+    filtersModal.addEventListener('click', (e) => {
+      if (e.target === filtersModal) closeModal();
+    });
+
+    // Close on ESC and implement simple focus trap
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        const hidden = filtersModal.getAttribute('aria-hidden') !== 'false';
+        if (!hidden) closeModal();
       }
     });
+
+    // Focus trap implementation: keep focus within modal
+    function focusTrap(e) {
+      if (!filtersModal.contains(e.target)) {
+        // redirect focus to first focusable element
+        const first = filtersModal.querySelector('select, input, button, [tabindex]:not([tabindex="-1"])');
+        if (first && typeof first.focus === 'function') {
+          first.focus();
+          e.stopPropagation();
+        }
+      }
+    }
+
+    // Initialize button state
+    setBtnToOpen();
   }
 });

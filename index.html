@@ -69,6 +69,7 @@
     
     <link rel="preload" href="./css/standalone.css" as="style" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="./css/standalone.css"></noscript>
+    <link rel="stylesheet" href="./css/overrides.css">
   </head>
   <body>
     <!-- Komunikat offline -->
@@ -113,60 +114,8 @@
             </button>
           </div>
 
-          <!-- Filtry i sortowanie (domyślnie ukryte) -->
-          <div
-            class="events-filter-container"
-            id="filters-container"
-            style="display: none"
-          >
-            <div class="events-filter">
-              <div class="filter-group">
-                <label for="events-filter" data-i18n="filter.timeLabel"
-                  >Czas</label
-                >
-                <select id="events-filter" aria-label="Filtruj wydarzenia">
-                  <option value="all" data-i18n="filter.all">Wszystkie</option>
-                  <option value="upcoming" data-i18n="filter.upcoming">
-                    Nadchodzące
-                  </option>
-                  <option value="past" data-i18n="filter.past">Przeszłe</option>
-                </select>
-              </div>
-              <div class="filter-group">
-                <label for="theme-filter" data-i18n="filter.themeLabel"
-                  >Tematyka</label
-                >
-                <select id="theme-filter" aria-label="Filtruj po temacie">
-                  <option value="all" data-i18n="filter.allThemes">
-                    Wszystkie tematy
-                  </option>
-                  <!-- Opcje tematów będą dodane dynamicznie przez JavaScript -->
-                </select>
-              </div>
-              <div class="filter-group">
-                <label for="sort-events" data-i18n="filter.sortLabel"
-                  >Sortowanie</label
-                >
-                <select id="sort-events" aria-label="Sortuj wydarzenia">
-                  <option value="date-asc" data-i18n="sort.dateAsc">
-                    Data: od najstarszych
-                  </option>
-                  <option value="date-desc" data-i18n="sort.dateDesc">
-                    Data: od najnowszych
-                  </option>
-                  <option value="title-asc" data-i18n="sort.titleAsc">
-                    Nazwa: A-Z
-                  </option>
-                  <option value="title-desc" data-i18n="sort.titleDesc">
-                    Nazwa: Z-A
-                  </option>
-                  <option value="created-desc" data-i18n="sort.createdDesc">
-                    Ostatnio utworzone
-                  </option>
-                </select>
-              </div>
-            </div>
-          </div>
+          <!-- Filtry przeniesione do modala (otwierane przyciskiem 'Dodaj filtry') -->
+          <!-- The filters themselves live in #filters-modal (see bottom of page) -->
         </div>
 
         <!-- Kontener na wydarzenia -->
@@ -195,6 +144,49 @@
         </div>
       </section>
     </main>
+
+    <!-- Filters modal: contains the same filter controls previously inline -->
+    <div id="filters-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="filters-modal-title">
+      <div class="modal-content" style="max-width:520px;padding:1.25rem;">
+        <div class="modal-header">
+          <h3 id="filters-modal-title" data-i18n="filter.title">Filtry wydarzeń</h3>
+          <button id="filters-modal-close" class="modal-close" aria-label="Zamknij filtry">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:1rem 0;">
+          <div class="events-filter">
+            <div class="filter-group">
+              <label for="events-filter" data-i18n="filter.timeLabel">Czas</label>
+              <select id="events-filter" aria-label="Filtruj wydarzenia">
+                <option value="all" data-i18n="filter.all">Wszystkie</option>
+                <option value="upcoming" data-i18n="filter.upcoming">Nadchodzące</option>
+                <option value="past" data-i18n="filter.past">Przeszłe</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="theme-filter" data-i18n="filter.themeLabel">Tematyka</label>
+              <select id="theme-filter" aria-label="Filtruj po temacie">
+                <option value="all" data-i18n="filter.allThemes">Wszystkie tematy</option>
+                <!-- Opcje tematów będą dodane dynamicznie przez JavaScript -->
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="sort-events" data-i18n="filter.sortLabel">Sortowanie</label>
+              <select id="sort-events" aria-label="Sortuj wydarzenia">
+                <option value="date-asc" data-i18n="sort.dateAsc">Data: od najstarszych</option>
+                <option value="date-desc" data-i18n="sort.dateDesc">Data: od najnowszych</option>
+                <option value="title-asc" data-i18n="sort.titleAsc">Nazwa: A-Z</option>
+                <option value="title-desc" data-i18n="sort.titleDesc">Nazwa: Z-A</option>
+                <option value="created-desc" data-i18n="sort.createdDesc">Ostatnio utworzone</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="display:flex;gap:.5rem;justify-content:flex-end;">
+          <button id="filters-modal-apply" class="btn btn-primary">Zastosuj</button>
+          <button id="filters-modal-cancel" class="btn">Anuluj</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Nawigacja - zarządzana przez navigation.js -->
     <div id="navigation-container"></div>

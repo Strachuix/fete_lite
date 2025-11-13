@@ -222,17 +222,6 @@
                                 class="form-input"
                             >
                             <div class="form-error" id="end-time-error"></div>
-                            
-                            <!-- Quick duration buttons -->
-                            <div class="duration-suggestions">
-                                <span class="duration-label" data-i18n="create.quickDuration">Szybki wybór:</span>
-                                <button type="button" class="btn-duration" data-hours="1">1h</button>
-                                <button type="button" class="btn-duration" data-hours="2">2h</button>
-                                <button type="button" class="btn-duration" data-hours="3">3h</button>
-                                <button type="button" class="btn-duration" data-hours="4">4h</button>
-                                <button type="button" class="btn-duration" data-hours="12" data-i18n="create.halfDay">Pół dnia</button>
-                                <button type="button" class="btn-duration" data-hours="24" data-i18n="create.fullDay">Cały dzień</button>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -325,14 +314,6 @@
                             </label>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="drinks-provided" name="drinksProvided">
-                            <span class="checkmark"></span>
-                            <span data-i18n="create.drinksProvided">Napoje będą zapewnione przez organizatora</span>
-                        </label>
-                    </div>
                 </section>
                 
                 <!-- Sekcja finansowa -->
@@ -392,6 +373,13 @@
                             min="1"
                             placeholder="Bez limitu"
                         >
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="allow-companion" name="allowCompanion">
+                            <span class="checkmark"></span>
+                            <span data-i18n="create.allowCompanion">Pozwól uczestnikom przyjść z osobą towarzyszącą (+1)</span>
+                        </label>
                     </div>
                 </section>
                 
