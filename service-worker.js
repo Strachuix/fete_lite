@@ -563,9 +563,9 @@ async function emergencyCleanup() {
     const cache = await caches.open(STATIC_CACHE);
     const essentialFiles = [
       '/',
-      '/index.html',
-      '/css/style.css',
-      '/js/main.js'
+      './index.html',
+      './css/style.css',
+      './js/main.js'
     ];
     
     for (const file of essentialFiles) {

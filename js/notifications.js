@@ -217,8 +217,8 @@ class NotificationManager {
     }
 
     const defaultOptions = {
-      icon: '/images/icons/icon-192x192.png',
-      badge: '/images/icons/icon-72x72.png',
+      icon: './images/icons/icon-192x192.png',
+      badge: './images/icons/icon-72x72.png',
       vibrate: [100, 50, 100],
       data: {
         timestamp: Date.now()

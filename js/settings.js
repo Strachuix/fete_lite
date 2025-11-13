@@ -128,7 +128,7 @@ class SettingsManager {
   // Pobierz wersję aplikacji z manifest.json
   async getAppVersion() {
     try {
-      const response = await fetch('/manifest.json');
+  const response = await fetch('./manifest.json');
       const manifest = await response.json();
       return manifest.version || '1.0.0';
     } catch (error) {
