@@ -37,7 +37,7 @@ class NavigationManager {
     
     return `
       <nav class="bottom-nav" role="navigation" aria-label="Główna nawigacja">
-        <a href="/" class="nav-item ${this.currentPage === 'home' ? 'active' : ''}" data-page="home">
+        <a href="./" class="nav-item ${this.currentPage === 'home' ? 'active' : ''}" data-page="home">
           <span class="nav-icon">🏠</span>
           <span class="nav-label" data-i18n="nav.home">Strona główna</span>
         </a>
