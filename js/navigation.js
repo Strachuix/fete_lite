@@ -26,6 +26,8 @@ class NavigationManager {
       return 'details';
     } else if (path.includes('settings')) {
       return 'settings';
+    } else if (path.includes('auth')) {
+      return 'auth';
     }
     
     return 'home';
