@@ -42,7 +42,7 @@ const STATIC_FILES = [
   './js/mobile-fullscreen.js',
   './js/i18n.js',
   './js/notifications.js',
-  './js/sample-data.js',
+  './js/sample-data-api.js',
   './js/modern-effects.js',
   './js/navigation.js',
   './js/header.js',

@@ -167,7 +167,7 @@ fete_lite/
 │   ├── darkmode.js           # Przełączanie motywów
 │   ├── network.js            # Monitoring sieci
 │   ├── notifications.js      # System powiadomień
-│   └── sample-data.js        # Przykładowe dane
+│   └── sample-data-api.js    # Przykładowe dane z API
 └── 🖼️ images/
     ├── logo.svg              # Logo aplikacji
     └── icons/                # Ikony PWA
