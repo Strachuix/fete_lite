@@ -17,7 +17,7 @@ class SampleDataManager {
   // Załaduj przykładowe dane z API
   async loadSampleDataFromAPI() {
     try {
-      const apiUrl = window.Config?.getApiUrl?.() || 'https://backend-production-bb92.up.railway.app';
+      const apiUrl = window.Config?.getApiUrl?.() || 'fetebackend-production.up.railway.app';
       const endpoint = `${apiUrl}/Fete_backend/sample-events.php`;
       
       console.log(`[SampleData] Fetching sample events from: ${endpoint}`);
