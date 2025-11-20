@@ -109,399 +109,391 @@
         <div class="form-container slide-in-up">
             <!-- Formularz tworzenia wydarzenia -->
             <form id="create-event-form" class="event-form animate-on-scroll" novalidate>
-                <!-- Pasek postępu -->
-                <div class="form-progress-container">
-                    <div class="form-progress-info">
-                        <span data-i18n="create.formProgress">Postęp wypełniania</span>
-                        <span class="form-progress-text">
-                            <span id="filled-fields-count">0</span>/<span id="total-fields-count">4</span>
-                            <span data-i18n="create.fieldsCompleted">pól wypełnionych</span>
-                        </span>
-                    </div>
-                    <div class="form-progress-bar">
-                        <div class="form-progress-fill" id="form-progress-fill"></div>
-                    </div>
-                </div>
-                
-                <!-- Sekcja podstawowych informacji -->
-                <section class="form-section stagger-item">
-                    <h2 data-i18n="create.basicInfo">Podstawowe informacje</h2>
-                    
-                    <div class="form-group">
-                        <label for="event-title" class="form-label required" data-i18n="create.eventTitle">
-                            Nazwa wydarzenia
-                        </label>
-                        <input 
-                            type="text" 
-                            id="event-title" 
-                            name="title"
-                            class="form-input" 
-                            required
-                            maxlength="100"
-                            data-i18n-placeholder="create.titlePlaceholder"
-                            placeholder="np. Grillowanie w parku"
-                        >
-                        <div class="form-error" id="title-error"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="event-description" class="form-label" data-i18n="create.description">
-                            Opis wydarzenia
-                        </label>
-                        <textarea 
-                            id="event-description" 
-                            name="description"
-                            class="form-textarea" 
-                            rows="4"
-                            maxlength="500"
-                            data-i18n-placeholder="create.descriptionPlaceholder"
-                            placeholder="Opisz szczegóły wydarzenia, co będzie się działo..."
-                        ></textarea>
-                        <div class="character-counter">
-                            <span id="description-counter">0</span>/500
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Sekcja daty i czasu -->
-                <section class="form-section">
-                    <h2 data-i18n="create.dateTime">Data i czas</h2>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="event-start-date" class="form-label required" data-i18n="create.startDate">
-                                Data rozpoczęcia
-                            </label>
-                            <input 
-                                type="date" 
-                                id="event-start-date" 
-                                name="startDate"
-                                class="form-input" 
-                                required
-                            >
-                            <div class="form-error" id="start-date-error"></div>
-                        </div>
+                <!-- 1 widok-->
+                    <!-- Sekcja podstawowych informacji -->
+                    <section class="form-section stagger-item">
+                        <h2 data-i18n="create.basicInfo">Podstawowe informacje</h2>
                         
                         <div class="form-group">
-                            <label for="event-start-time" class="form-label required" data-i18n="create.startTime">
-                                Godzina rozpoczęcia
+                            <label for="event-title" class="form-label required" data-i18n="create.eventTitle">
+                                Nazwa wydarzenia
                             </label>
-                            <input 
-                                type="time" 
-                                id="event-start-time" 
-                                name="startTime"
-                                class="form-input" 
-                                required
-                            >
-                            <div class="form-error" id="start-time-error"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="event-end-date" class="form-label" data-i18n="create.endDate">
-                                Data zakończenia
-                            </label>
-                            <input 
-                                type="date" 
-                                id="event-end-date" 
-                                name="endDate"
-                                class="form-input"
-                            >
-                            <div class="form-error" id="end-date-error"></div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="event-end-time" class="form-label" data-i18n="create.endTime">
-                                Godzina zakończenia
-                            </label>
-                            <input 
-                                type="time" 
-                                id="event-end-time" 
-                                name="endTime"
-                                class="form-input"
-                            >
-                            <div class="form-error" id="end-time-error"></div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Sekcja lokalizacji -->
-                <section class="form-section">
-                    <h2 data-i18n="create.location">Lokalizacja</h2>
-                    
-                    <div class="form-group">
-                        <label for="event-location" class="form-label" data-i18n="create.eventLocation">
-                            Miejsce wydarzenia
-                        </label>
-                        <div class="location-input-group">
                             <input 
                                 type="text" 
-                                id="event-location" 
-                                name="location"
+                                id="event-title" 
+                                name="title"
                                 class="form-input" 
-                                data-i18n-placeholder="create.locationPlaceholder"
-                                placeholder="Adres lub nazwa miejsca"
+                                required
+                                maxlength="100"
+                                data-i18n-placeholder="create.titlePlaceholder"
+                                placeholder="np. Grillowanie w parku"
                             >
-                            <button 
-                                type="button" 
-                                id="get-location-btn" 
-                                class="btn btn-secondary btn-icon"
-                                aria-label="Pobierz aktualną lokalizację"
-                                title="Pobierz aktualną lokalizację"
-                            >
-                                📍
-                            </button>
-                            <button 
-                                type="button" 
-                                id="select-on-map-btn" 
-                                class="btn btn-secondary btn-icon"
-                                aria-label="Wybierz na mapie"
-                                title="Wybierz lokalizację na mapie"
-                            >
-                                🗺️
-                            </button>
+                            <div class="form-error" id="title-error"></div>
                         </div>
-                        <div class="form-help" data-i18n="create.locationHelp">
-                            Kliknij 📍 aby pobrać aktualną lokalizację lub 🗺️ aby wybrać na mapie
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Sekcja wymagań i preferencji -->
-                <section class="form-section">
-                    <h2 data-i18n="create.requirements">Wymagania i preferencje</h2>
-                    
-                    <div class="form-group">
-                        <label for="food-requirements" class="form-label" data-i18n="create.foodRequirements">
-                            Wymagania żywieniowe
-                        </label>
-                        <textarea 
-                            id="food-requirements" 
-                            name="foodRequirements"
-                            class="form-textarea" 
-                            rows="3"
-                            data-i18n-placeholder="create.foodRequirementsPlaceholder"
-                            placeholder="np. Opcje wegetariańskie, bezglutenowe, bez orzechów..."
-                        ></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="create.alcoholPolicy">Polityka alkoholowa</label>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="alcoholPolicy" value="provided" checked>
-                                <span class="radio-text">
-                                    <span class="radio-icon">🍺</span>
-                                    <span data-i18n="create.alcoholAllowed">Alkohol zapewniony przez organizatora</span>
-                                </span>
-                            </label>
-                            
-                            <label class="radio-label">
-                                <input type="radio" name="alcoholPolicy" value="not_allowed">
-                                <span class="radio-text">
-                                    <span class="radio-icon">🚫</span>
-                                    <span data-i18n="create.alcoholNotAllowed">Bez alkoholu</span>
-                                </span>
-                            </label>
-                            
-                            <label class="radio-label">
-                                <input type="radio" name="alcoholPolicy" value="byob">
-                                <span class="radio-text">
-                                    <span class="radio-icon">🛍️</span>
-                                    <span data-i18n="create.byob">Przynieś własny alkohol</span>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Sekcja finansowa -->
-                <section class="form-section">
-                    <h2 data-i18n="create.financial">Informacje finansowe</h2>
-                    
-                    <div class="form-row">
+                        
                         <div class="form-group">
-                            <label for="entry-fee" class="form-label" data-i18n="create.entryFee">
-                                Składka (PLN)
+                            <label for="event-description" class="form-label" data-i18n="create.description">
+                                Opis wydarzenia
+                            </label>
+                            <textarea 
+                                id="event-description" 
+                                name="description"
+                                class="form-textarea" 
+                                rows="4"
+                                maxlength="500"
+                                data-i18n-placeholder="create.descriptionPlaceholder"
+                                placeholder="Opisz szczegóły wydarzenia, co będzie się działo..."
+                            ></textarea>
+                            <div class="character-counter">
+                                <span id="description-counter">0</span>/500
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Sekcja daty i czasu -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.dateTime">Data i czas</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="event-start-date" class="form-label required" data-i18n="create.startDate">
+                                    Data rozpoczęcia
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="event-start-date" 
+                                    name="startDate"
+                                    class="form-input" 
+                                    required
+                                >
+                                <div class="form-error" id="start-date-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="event-start-time" class="form-label required" data-i18n="create.startTime">
+                                    Godzina rozpoczęcia
+                                </label>
+                                <input 
+                                    type="time" 
+                                    id="event-start-time" 
+                                    name="startTime"
+                                    class="form-input" 
+                                    required
+                                >
+                                <div class="form-error" id="start-time-error"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="event-end-date" class="form-label" data-i18n="create.endDate">
+                                    Data zakończenia
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="event-end-date" 
+                                    name="endDate"
+                                    class="form-input"
+                                >
+                                <div class="form-error" id="end-date-error"></div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="event-end-time" class="form-label" data-i18n="create.endTime">
+                                    Godzina zakończenia
+                                </label>
+                                <input 
+                                    type="time" 
+                                    id="event-end-time" 
+                                    name="endTime"
+                                    class="form-input"
+                                >
+                                <div class="form-error" id="end-time-error"></div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- Sekcja lokalizacji -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.location">Lokalizacja</h2>
+                        
+                        <div class="form-group">
+                            <label for="event-location" class="form-label" data-i18n="create.eventLocation">
+                                Miejsce wydarzenia
+                            </label>
+                            <div class="location-input-group">
+                                <input 
+                                    type="text" 
+                                    id="event-location" 
+                                    name="location"
+                                    class="form-input" 
+                                    data-i18n-placeholder="create.locationPlaceholder"
+                                    placeholder="Adres lub nazwa miejsca"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="get-location-btn" 
+                                    class="btn btn-secondary btn-icon"
+                                    aria-label="Pobierz aktualną lokalizację"
+                                    title="Pobierz aktualną lokalizację"
+                                >
+                                    📍
+                                </button>
+                                <button 
+                                    type="button" 
+                                    id="select-on-map-btn" 
+                                    class="btn btn-secondary btn-icon"
+                                    aria-label="Wybierz na mapie"
+                                    title="Wybierz lokalizację na mapie"
+                                >
+                                    🗺️
+                                </button>
+                            </div>
+                            <div class="form-help" data-i18n="create.locationHelp">
+                                Kliknij 📍 aby pobrać aktualną lokalizację lub 🗺️ aby wybrać na mapie
+                            </div>
+                        </div>
+                    </section>
+                <!-- Koniec 1 widoku -->
+                <!-- 2 widok-->
+                    <!-- Sekcja wymagań i preferencji -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.requirements">Wymagania i preferencje</h2>
+                        
+                        <div class="form-group">
+                            <label for="food-requirements" class="form-label" data-i18n="create.foodRequirements">
+                                Wymagania żywieniowe
+                            </label>
+                            <textarea 
+                                id="food-requirements" 
+                                name="foodRequirements"
+                                class="form-textarea" 
+                                rows="3"
+                                data-i18n-placeholder="create.foodRequirementsPlaceholder"
+                                placeholder="np. Opcje wegetariańskie, bezglutenowe, bez orzechów..."
+                            ></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="create.alcoholPolicy">Polityka alkoholowa</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="alcoholPolicy" value="provided" checked>
+                                    <span class="radio-text">
+                                        <span class="radio-icon">🍺</span>
+                                        <span data-i18n="create.alcoholAllowed">Alkohol zapewniony przez organizatora</span>
+                                    </span>
+                                </label>
+                                
+                                <label class="radio-label">
+                                    <input type="radio" name="alcoholPolicy" value="not_allowed">
+                                    <span class="radio-text">
+                                        <span class="radio-icon">🚫</span>
+                                        <span data-i18n="create.alcoholNotAllowed">Bez alkoholu</span>
+                                    </span>
+                                </label>
+                                
+                                <label class="radio-label">
+                                    <input type="radio" name="alcoholPolicy" value="byob">
+                                    <span class="radio-text">
+                                        <span class="radio-icon">🛍️</span>
+                                        <span data-i18n="create.byob">Przynieś własny alkohol</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+                <!-- Koniec 2 widoku -->
+                <!-- 3 Widok -->
+                <!-- Sekcja limitu uczestników -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.maxParticipants">Limit uczestników</h2>
+                        
+                        <div class="form-group">
+                            <label for="max-participants" class="form-label" data-i18n="create.maxParticipantsLabel">
+                                Maksymalna liczba uczestników
                             </label>
                             <input 
                                 type="number" 
-                                id="entry-fee" 
-                                name="entryFee"
+                                id="max-participants" 
+                                name="maxParticipants"
                                 class="form-input" 
-                                min="0"
-                                step="0.01"
-                                placeholder="0.00"
+                                min="1"
+                                placeholder="Bez limitu"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="allow-companion" name="allowCompanion">
+                                <span class="checkmark"></span>
+                                <span data-i18n="create.allowCompanion">Pozwól uczestnikom przyjść z osobą towarzyszącą (+1)</span>
+                            </label>
+                        </div>
+                    </section>
+                    
+                    <!-- Sekcja noclegu -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.accommodation">Nocleg</h2>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="accommodation-available" name="accommodationAvailable">
+                                <span class="checkmark"></span>
+                                <span data-i18n="create.accommodationAvailable">Możliwość noclegu</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group" id="max-overnight-group" style="display: none;">
+                            <label for="max-overnight-participants" class="form-label" data-i18n="create.maxOvernightParticipants">
+                                Limit uczestników nocujących
+                            </label>
+                            <input 
+                                type="number" 
+                                id="max-overnight-participants" 
+                                name="maxOvernightParticipants"
+                                class="form-input" 
+                                min="1"
+                                placeholder="Bez limitu"
                             >
                         </div>
                         
-                        <div class="form-group">
-                            <label for="organizer-blik" class="form-label" data-i18n="create.organizerBlik">
-                                Twój numer telefonu (do BLIK)
+                        <div class="form-group" id="accommodation-info-group" style="display: none;">
+                            <label for="accommodation-info" class="form-label" data-i18n="create.accommodationInfo">
+                                Informacje o noclegu
                             </label>
-                            <input 
-                                type="tel" 
-                                id="organizer-blik" 
-                                name="organizerBlik"
-                                class="form-input" 
-                                maxlength="9"
-                                pattern="[0-9]{9}"
-                                placeholder="123456789"
-                                data-i18n-placeholder="create.blikPlaceholder"
-                            >
-                            <div class="form-help" data-i18n="create.blikHelp">
-                                Numer telefonu do płatności BLIK ułatwi uczestnikom wpłacanie składek
+                            <textarea 
+                                id="accommodation-info" 
+                                name="accommodationInfo"
+                                class="form-textarea" 
+                                rows="3"
+                                data-i18n-placeholder="create.accommodationInfoPlaceholder"
+                                placeholder="Opisz warunki noclegu, ilość miejsc, koszty..."
+                            ></textarea>
+                        </div>
+                    </section>
+                <!-- Koniec 3 widoku -->
+                <!-- 4 Widok -->
+                    <!-- Sekcja dress code -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.dressCode">Dress code</h2>
+                        
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="create.dressCodeLabel">
+                                Wybierz dress code dla wydarzenia
+                            </label>
+                            <button type="button" id="dress-code-btn" class="dress-code-button">
+                                <span class="dress-code-icon">👔</span>
+                                <span class="dress-code-text" data-i18n="create.selectDressCode">Wybierz dress code</span>
+                                <span class="dress-code-arrow">▼</span>
+                            </button>
+                            <div class="dress-code-selected" id="dress-code-selected" style="display: none;">
+                                <span class="selected-label" data-i18n="create.selectedDressCode">Wybrano:</span>
+                                <span class="selected-value" id="selected-dress-code-text"></span>
+                                <button type="button" class="change-btn" id="change-dress-code" data-i18n="create.change">Zmień</button>
+                            </div>
+                            <!-- Hidden inputs to store values -->
+                            <input type="hidden" id="dress-code-type" name="dressCodeType" value="none">
+                            <input type="hidden" id="custom-dress-code" name="customDressCode" value="">
+                        </div>
+                    </section>
+                    
+                    <!-- Sekcja tematyki wydarzenia -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.eventTheme">Tematyka wydarzenia</h2>
+                        
+                        <div class="form-group">
+                            <label class="form-label" data-i18n="create.selectTheme">
+                                Wybierz tematykę wydarzenia
+                            </label>
+                            <div class="theme-selection-grid" id="theme-selection-grid">
+                                <!-- Tematyki b�d� za�adowane dynamicznie z event-themes.js -->
                             </div>
                         </div>
-                    </div>
-                </section>
-                
-                <!-- Sekcja limitu uczestników -->
-                <section class="form-section">
-                    <h2 data-i18n="create.maxParticipants">Limit uczestników</h2>
+                    </section>
+                <!-- Koniec 4 widoku -->
+                <!-- 5 Widok -->
+                <!-- Sekcja finansowa -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.financial">Informacje finansowe</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="entry-fee" class="form-label" data-i18n="create.entryFee">
+                                    Składka (PLN)
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="entry-fee" 
+                                    name="entryFee"
+                                    class="form-input" 
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                >
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="organizer-blik" class="form-label" data-i18n="create.organizerBlik">
+                                    Twój numer telefonu (do BLIK)
+                                </label>
+                                <input 
+                                    type="tel" 
+                                    id="organizer-blik" 
+                                    name="organizerBlik"
+                                    class="form-input" 
+                                    maxlength="9"
+                                    pattern="[0-9]{9}"
+                                    placeholder="123456789"
+                                    data-i18n-placeholder="create.blikPlaceholder"
+                                >
+                                <div class="form-help" data-i18n="create.blikHelp">
+                                    Numer telefonu do płatności BLIK ułatwi uczestnikom wpłacanie składek
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                        
+                    <!-- Sekcja multimediów -->
+                    <section class="form-section">
+                        <h2 data-i18n="create.media">Zdjęcia wydarzenia</h2>
+                        
+                        <div class="form-group">
+                            <label for="event-images" class="form-label" data-i18n="create.eventImages">
+                                Dodaj zdjęcia
+                            </label>
+                            <div class="file-upload-area">
+                                <input 
+                                    type="file" 
+                                    id="event-images" 
+                                    name="eventImages"
+                                    class="file-input" 
+                                    multiple
+                                    accept="image/*"
+                                >
+                                <div class="file-upload-placeholder">
+                                    <span class="upload-icon">📷</span>
+                                    <p data-i18n="create.uploadImages">Kliknij aby dodać zdjęcia lub przeciągnij je tutaj</p>
+                                    <small data-i18n="create.imageFormats">Format: JPG, PNG, WEBP (max 5MB każde)</small>
+                                </div>
+                                <div id="image-preview" class="image-preview-grid"></div>
+                            </div>
+                        </div>
+                    </section>
                     
-                    <div class="form-group">
-                        <label for="max-participants" class="form-label" data-i18n="create.maxParticipantsLabel">
-                            Maksymalna liczba uczestników
-                        </label>
-                        <input 
-                            type="number" 
-                            id="max-participants" 
-                            name="maxParticipants"
-                            class="form-input" 
-                            min="1"
-                            placeholder="Bez limitu"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="allow-companion" name="allowCompanion">
-                            <span class="checkmark"></span>
-                            <span data-i18n="create.allowCompanion">Pozwól uczestnikom przyjść z osobą towarzyszącą (+1)</span>
-                        </label>
-                    </div>
-                </section>
-                
-                <!-- Sekcja noclegu -->
-                <section class="form-section">
-                    <h2 data-i18n="create.accommodation">Nocleg</h2>
-                    
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="accommodation-available" name="accommodationAvailable">
-                            <span class="checkmark"></span>
-                            <span data-i18n="create.accommodationAvailable">Możliwość noclegu</span>
-                        </label>
-                    </div>
-                    
-                    <div class="form-group" id="max-overnight-group" style="display: none;">
-                        <label for="max-overnight-participants" class="form-label" data-i18n="create.maxOvernightParticipants">
-                            Limit uczestników nocujących
-                        </label>
-                        <input 
-                            type="number" 
-                            id="max-overnight-participants" 
-                            name="maxOvernightParticipants"
-                            class="form-input" 
-                            min="1"
-                            placeholder="Bez limitu"
-                        >
-                    </div>
-                    
-                    <div class="form-group" id="accommodation-info-group" style="display: none;">
-                        <label for="accommodation-info" class="form-label" data-i18n="create.accommodationInfo">
-                            Informacje o noclegu
-                        </label>
-                        <textarea 
-                            id="accommodation-info" 
-                            name="accommodationInfo"
-                            class="form-textarea" 
-                            rows="3"
-                            data-i18n-placeholder="create.accommodationInfoPlaceholder"
-                            placeholder="Opisz warunki noclegu, ilość miejsc, koszty..."
-                        ></textarea>
-                    </div>
-                </section>
-                
-                <!-- Sekcja dress code -->
-                <section class="form-section">
-                    <h2 data-i18n="create.dressCode">Dress code</h2>
-                    
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="create.dressCodeLabel">
-                            Wybierz dress code dla wydarzenia
-                        </label>
-                        <button type="button" id="dress-code-btn" class="dress-code-button">
-                            <span class="dress-code-icon">👔</span>
-                            <span class="dress-code-text" data-i18n="create.selectDressCode">Wybierz dress code</span>
-                            <span class="dress-code-arrow">▼</span>
+                    <!-- Przyciski akcji -->
+                    <div class="form-actions">
+                        <button type="button" id="preview-btn" class="btn btn-secondary hover-lift">
+                            <span data-i18n="create.preview">Podgląd</span>
                         </button>
-                        <div class="dress-code-selected" id="dress-code-selected" style="display: none;">
-                            <span class="selected-label" data-i18n="create.selectedDressCode">Wybrano:</span>
-                            <span class="selected-value" id="selected-dress-code-text"></span>
-                            <button type="button" class="change-btn" id="change-dress-code" data-i18n="create.change">Zmień</button>
-                        </div>
-                        <!-- Hidden inputs to store values -->
-                        <input type="hidden" id="dress-code-type" name="dressCodeType" value="none">
-                        <input type="hidden" id="custom-dress-code" name="customDressCode" value="">
+                        
+                        <button type="submit" id="save-btn" class="btn btn-primary hover-lift pulse-glow">
+                            <span class="btn-loading" style="display: none;">
+                                <span class="loading-spinner"></span>
+                            </span>
+                            <span class="btn-text" data-i18n="create.save">Zapisz wydarzenie</span>
+                        </button>
                     </div>
-                </section>
-                
-                <!-- Sekcja multimediów -->
-                <section class="form-section">
-                    <h2 data-i18n="create.media">Zdjęcia wydarzenia</h2>
-                    
-                    <div class="form-group">
-                        <label for="event-images" class="form-label" data-i18n="create.eventImages">
-                            Dodaj zdjęcia
-                        </label>
-                        <div class="file-upload-area">
-                            <input 
-                                type="file" 
-                                id="event-images" 
-                                name="eventImages"
-                                class="file-input" 
-                                multiple
-                                accept="image/*"
-                            >
-                            <div class="file-upload-placeholder">
-                                <span class="upload-icon">📷</span>
-                                <p data-i18n="create.uploadImages">Kliknij aby dodać zdjęcia lub przeciągnij je tutaj</p>
-                                <small data-i18n="create.imageFormats">Format: JPG, PNG, WEBP (max 5MB każde)</small>
-                            </div>
-                            <div id="image-preview" class="image-preview-grid"></div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Sekcja tematyki wydarzenia -->
-                <section class="form-section">
-                    <h2 data-i18n="create.eventTheme">Tematyka wydarzenia</h2>
-                    
-                    <div class="form-group">
-                        <label class="form-label" data-i18n="create.selectTheme">
-                            Wybierz tematykę wydarzenia
-                        </label>
-                        <div class="theme-selection-grid" id="theme-selection-grid">
-                            <!-- Tematyki b�d� za�adowane dynamicznie z event-themes.js -->
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Przyciski akcji -->
-                <div class="form-actions">
-                    <button type="button" id="preview-btn" class="btn btn-secondary hover-lift">
-                        <span data-i18n="create.preview">Podgląd</span>
-                    </button>
-                    
-                    <button type="submit" id="save-btn" class="btn btn-primary hover-lift pulse-glow">
-                        <span class="btn-loading" style="display: none;">
-                            <span class="loading-spinner"></span>
-                        </span>
-                        <span class="btn-text" data-i18n="create.save">Zapisz wydarzenie</span>
-                    </button>
-                </div>
+                <!-- Koniec 5 widoku -->
             </form>
         </div>
     </main>

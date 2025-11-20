@@ -14,10 +14,10 @@ class Config {
     
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('192.168.')) {
       // Lokalne środowisko - używaj Railway backend
-      return 'fetebackend-production.up.railway.app';
+      return 'https://fetebackend-production.up.railway.app/';
     } else {
       // Produkcja - również Railway backend
-      return 'fetebackend-production.up.railway.app';
+      return 'https://fetebackend-production.up.railway.app/';
     }
   }
 

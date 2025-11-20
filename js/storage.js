@@ -3,30 +3,30 @@
 
 class StorageManager {
   constructor() {
-    this.storageKey = 'fete-lite-events';
-    this.settingsKey = 'fete-lite-settings';
-    this.offlineQueueKey = 'fete-lite-offline-queue';
-    this.cacheKey = 'fete-lite-events-cache';
+    this.storageKey = "fete-lite-events";
+    this.settingsKey = "fete-lite-settings";
+    this.offlineQueueKey = "fete-lite-offline-queue";
+    this.cacheKey = "fete-lite-events-cache";
     this.isLocalStorageAvailable = this.checkLocalStorageSupport();
     this.useApi = true; // Domyślnie próbuj używać API
-    
+
     if (!this.isLocalStorageAvailable) {
-      console.warn('[Storage] localStorage nie jest dostępne, używam fallback');
+      console.warn("[Storage] localStorage nie jest dostępne, używam fallback");
       this.fallbackStorage = new Map();
     }
 
     // Inicjalizuj offline queue
     this.offlineQueue = this.loadOfflineQueue();
-    
+
     // Nasłuchuj zmian statusu online/offline
-    window.addEventListener('online', () => this.syncOfflineQueue());
+    window.addEventListener("online", () => this.syncOfflineQueue());
   }
 
   // Sprawdź dostępność localStorage
   checkLocalStorageSupport() {
     try {
-      const testKey = '__localStorage_test__';
-      localStorage.setItem(testKey, 'test');
+      const testKey = "__localStorage_test__";
+      localStorage.setItem(testKey, "test");
       localStorage.removeItem(testKey);
       return true;
     } catch (e) {
@@ -36,13 +36,15 @@ class StorageManager {
 
   // Generuj unikalny ID dla wydarzenia
   generateEventId() {
-    return 'event_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return (
+      "event_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9)
+    );
   }
 
   // Generuj kod zaproszenia (8 znaków alfanumerycznych)
   generateInvitationCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Bez podobnych znaków (0/O, 1/I)
-    let code = '';
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Bez podobnych znaków (0/O, 1/I)
+    let code = "";
     for (let i = 0; i < 8; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
@@ -59,7 +61,7 @@ class StorageManager {
         return Array.from(this.fallbackStorage.values());
       }
     } catch (error) {
-      console.error('[Storage] Błąd podczas pobierania wydarzeń:', error);
+      console.error("[Storage] Błąd podczas pobierania wydarzeń:", error);
       return [];
     }
   }
@@ -69,12 +71,12 @@ class StorageManager {
     try {
       if (this.isLocalStorageAvailable) {
         const events = this.getAllEvents();
-        return events.find(event => event.id === id) || null;
+        return events.find((event) => event.id === id) || null;
       } else {
         return this.fallbackStorage.get(id) || null;
       }
     } catch (error) {
-      console.error('[Storage] Błąd podczas pobierania wydarzenia:', error);
+      console.error("[Storage] Błąd podczas pobierania wydarzenia:", error);
       return null;
     }
   }
@@ -84,7 +86,7 @@ class StorageManager {
     try {
       // Walidacja danych
       if (!eventData.title || !eventData.startDate) {
-        throw new Error('Brak wymaganych danych wydarzenia');
+        throw new Error("Brak wymaganych danych wydarzenia");
       }
 
       // Dodaj ID jeśli go nie ma
@@ -97,7 +99,10 @@ class StorageManager {
         const currentUser = window.authManager.getCurrentUser();
         if (currentUser) {
           eventData.organizerId = currentUser.id || currentUser.email;
-          eventData.organizerName = `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || currentUser.email;
+          eventData.organizerName =
+            `${currentUser.first_name || ""} ${
+              currentUser.last_name || ""
+            }`.trim() || currentUser.email;
         }
       }
 
@@ -115,37 +120,45 @@ class StorageManager {
 
       // Konwertuj daty na ISO string dla spójności
       if (eventData.startDate && eventData.startTime) {
-        eventData.startDate = this.combineDateAndTime(eventData.startDate, eventData.startTime);
+        eventData.startDate = this.combineDateAndTime(
+          eventData.startDate,
+          eventData.startTime
+        );
       }
       if (eventData.endDate && eventData.endTime) {
-        eventData.endDate = this.combineDateAndTime(eventData.endDate, eventData.endTime);
+        eventData.endDate = this.combineDateAndTime(
+          eventData.endDate,
+          eventData.endTime
+        );
       }
 
       if (this.isLocalStorageAvailable) {
         const events = this.getAllEvents();
-        const existingIndex = events.findIndex(event => event.id === eventData.id);
-        
+        const existingIndex = events.findIndex(
+          (event) => event.id === eventData.id
+        );
+
         if (existingIndex >= 0) {
           events[existingIndex] = eventData;
         } else {
           events.push(eventData);
         }
-        
+
         localStorage.setItem(this.storageKey, JSON.stringify(events));
       } else {
         this.fallbackStorage.set(eventData.id, eventData);
       }
 
-
-      
       // Wyślij event o zapisaniu
-      document.dispatchEvent(new CustomEvent('eventSaved', {
-        detail: { event: eventData }
-      }));
+      document.dispatchEvent(
+        new CustomEvent("eventSaved", {
+          detail: { event: eventData },
+        })
+      );
 
       return eventData;
     } catch (error) {
-      console.error('[Storage] Błąd podczas zapisywania wydarzenia:', error);
+      console.error("[Storage] Błąd podczas zapisywania wydarzenia:", error);
       throw error;
     }
   }
@@ -155,51 +168,51 @@ class StorageManager {
     try {
       if (this.isLocalStorageAvailable) {
         const events = this.getAllEvents();
-        const filteredEvents = events.filter(event => event.id !== id);
-        
+        const filteredEvents = events.filter((event) => event.id !== id);
+
         if (events.length === filteredEvents.length) {
-          throw new Error('Wydarzenie nie zostało znalezione');
+          throw new Error("Wydarzenie nie zostało znalezione");
         }
-        
+
         localStorage.setItem(this.storageKey, JSON.stringify(filteredEvents));
       } else {
         if (!this.fallbackStorage.has(id)) {
-          throw new Error('Wydarzenie nie zostało znalezione');
+          throw new Error("Wydarzenie nie zostało znalezione");
         }
         this.fallbackStorage.delete(id);
       }
 
-
-      
       // Wyślij event o usunięciu
-      document.dispatchEvent(new CustomEvent('eventDeleted', {
-        detail: { eventId: id }
-      }));
+      document.dispatchEvent(
+        new CustomEvent("eventDeleted", {
+          detail: { eventId: id },
+        })
+      );
 
       return true;
     } catch (error) {
-      console.error('[Storage] Błąd podczas usuwania wydarzenia:', error);
+      console.error("[Storage] Błąd podczas usuwania wydarzenia:", error);
       throw error;
     }
   }
 
   // Pobierz wydarzenia z filtrem
-  getEventsFiltered(filter = 'all') {
+  getEventsFiltered(filter = "all") {
     const events = this.getAllEvents();
     const now = new Date();
 
     switch (filter) {
-      case 'upcoming':
-        return events.filter(event => new Date(event.startDate) >= now);
-      case 'past':
-        return events.filter(event => new Date(event.startDate) < now);
-      case 'today':
+      case "upcoming":
+        return events.filter((event) => new Date(event.startDate) >= now);
+      case "past":
+        return events.filter((event) => new Date(event.startDate) < now);
+      case "today":
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        return events.filter(event => {
+
+        return events.filter((event) => {
           const eventDate = new Date(event.startDate);
           return eventDate >= today && eventDate < tomorrow;
         });
@@ -221,35 +234,37 @@ class StorageManager {
   searchEvents(query) {
     const events = this.getAllEvents();
     const searchTerm = query.toLowerCase().trim();
-    
+
     if (!searchTerm) return events;
 
-    return events.filter(event => 
-      event.title.toLowerCase().includes(searchTerm) ||
-      (event.description && event.description.toLowerCase().includes(searchTerm)) ||
-      (event.location && event.location.toLowerCase().includes(searchTerm))
+    return events.filter(
+      (event) =>
+        event.title.toLowerCase().includes(searchTerm) ||
+        (event.description &&
+          event.description.toLowerCase().includes(searchTerm)) ||
+        (event.location && event.location.toLowerCase().includes(searchTerm))
     );
   }
 
   // Pomocnicza funkcja do łączenia daty i czasu
   combineDateAndTime(date, time) {
     if (!date || !time) return date;
-    
+
     // Jeśli to już jest pełna data ISO, zwróć bez zmian
-    if (date.includes('T')) return date;
-    
+    if (date.includes("T")) return date;
+
     return `${date}T${time}:00`;
   }
 
   // Rozdziel datę i czas
   splitDateTime(dateTimeString) {
-    if (!dateTimeString) return { date: '', time: '' };
-    
+    if (!dateTimeString) return { date: "", time: "" };
+
     const dateTime = new Date(dateTimeString);
-    
+
     return {
-      date: dateTime.toISOString().split('T')[0],
-      time: dateTime.toTimeString().slice(0, 5)
+      date: dateTime.toISOString().split("T")[0],
+      time: dateTime.toTimeString().slice(0, 5),
     };
   }
 
@@ -260,12 +275,14 @@ class StorageManager {
     try {
       if (this.isLocalStorageAvailable) {
         const settingsJson = localStorage.getItem(this.settingsKey);
-        return settingsJson ? JSON.parse(settingsJson) : this.getDefaultSettings();
+        return settingsJson
+          ? JSON.parse(settingsJson)
+          : this.getDefaultSettings();
       } else {
         return this.getDefaultSettings();
       }
     } catch (error) {
-      console.error('[Storage] Błąd podczas pobierania ustawień:', error);
+      console.error("[Storage] Błąd podczas pobierania ustawień:", error);
       return this.getDefaultSettings();
     }
   }
@@ -273,12 +290,12 @@ class StorageManager {
   // Domyślne ustawienia
   getDefaultSettings() {
     return {
-      theme: 'auto', // 'light', 'dark', 'auto'
-      language: 'pl',
+      theme: "auto", // 'light', 'dark', 'auto'
+      language: "pl",
       notifications: false,
       notificationTime: 60, // minuty przed wydarzeniem
       autoLocation: false,
-      defaultEventDuration: 120 // minuty
+      defaultEventDuration: 120, // minuty
     };
   }
 
@@ -292,16 +309,16 @@ class StorageManager {
         localStorage.setItem(this.settingsKey, JSON.stringify(updatedSettings));
       }
 
-
-      
       // Wyślij event o zmianie ustawień
-      document.dispatchEvent(new CustomEvent('settingsChanged', {
-        detail: { settings: updatedSettings }
-      }));
+      document.dispatchEvent(
+        new CustomEvent("settingsChanged", {
+          detail: { settings: updatedSettings },
+        })
+      );
 
       return updatedSettings;
     } catch (error) {
-      console.error('[Storage] Błąd podczas zapisywania ustawień:', error);
+      console.error("[Storage] Błąd podczas zapisywania ustawień:", error);
       throw error;
     }
   }
@@ -328,13 +345,16 @@ class StorageManager {
 
     return {
       total: events.length,
-      upcoming: events.filter(event => new Date(event.startDate) >= now).length,
-      past: events.filter(event => new Date(event.startDate) < now).length,
-      thisMonth: events.filter(event => {
+      upcoming: events.filter((event) => new Date(event.startDate) >= now)
+        .length,
+      past: events.filter((event) => new Date(event.startDate) < now).length,
+      thisMonth: events.filter((event) => {
         const eventDate = new Date(event.startDate);
-        return eventDate.getMonth() === now.getMonth() && 
-               eventDate.getFullYear() === now.getFullYear();
-      }).length
+        return (
+          eventDate.getMonth() === now.getMonth() &&
+          eventDate.getFullYear() === now.getFullYear()
+        );
+      }).length,
     };
   }
 
@@ -346,7 +366,7 @@ class StorageManager {
       events: this.getAllEvents(),
       settings: this.getSettings(),
       exportDate: new Date().toISOString(),
-      version: '1.0.0'
+      version: "1.0.0",
     };
   }
 
@@ -354,37 +374,37 @@ class StorageManager {
   importData(data) {
     try {
       if (!data || !data.events) {
-        throw new Error('Nieprawidłowy format danych');
+        throw new Error("Nieprawidłowy format danych");
       }
 
       // Waliduj i importuj wydarzenia
-      const validEvents = data.events.filter(event => 
-        event.id && event.title && event.startDate
+      const validEvents = data.events.filter(
+        (event) => event.id && event.title && event.startDate
       );
 
       if (this.isLocalStorageAvailable) {
         localStorage.setItem(this.storageKey, JSON.stringify(validEvents));
-        
+
         if (data.settings) {
           localStorage.setItem(this.settingsKey, JSON.stringify(data.settings));
         }
       } else {
         this.fallbackStorage.clear();
-        validEvents.forEach(event => {
+        validEvents.forEach((event) => {
           this.fallbackStorage.set(event.id, event);
         });
       }
 
-
-      
       // Wyślij event o imporcie
-      document.dispatchEvent(new CustomEvent('dataImported', {
-        detail: { eventsCount: validEvents.length }
-      }));
+      document.dispatchEvent(
+        new CustomEvent("dataImported", {
+          detail: { eventsCount: validEvents.length },
+        })
+      );
 
       return validEvents.length;
     } catch (error) {
-      console.error('[Storage] Błąd podczas importu danych:', error);
+      console.error("[Storage] Błąd podczas importu danych:", error);
       throw error;
     }
   }
@@ -399,14 +419,12 @@ class StorageManager {
         this.fallbackStorage.clear();
       }
 
-
-      
       // Wyślij event o wyczyszczeniu
-      document.dispatchEvent(new CustomEvent('dataCleared'));
+      document.dispatchEvent(new CustomEvent("dataCleared"));
 
       return true;
     } catch (error) {
-      console.error('[Storage] Błąd podczas czyszczenia danych:', error);
+      console.error("[Storage] Błąd podczas czyszczenia danych:", error);
       throw error;
     }
   }
@@ -432,23 +450,23 @@ class StorageManager {
         used: used,
         available: Math.max(0, available),
         usedFormatted: this.formatBytes(used),
-        availableFormatted: this.formatBytes(available)
+        availableFormatted: this.formatBytes(available),
       };
     } catch (error) {
-      console.error('[Storage] Błąd podczas sprawdzania rozmiaru:', error);
+      console.error("[Storage] Błąd podczas sprawdzania rozmiaru:", error);
       return { used: 0, available: 0 };
     }
   }
 
   // Formatuj bajty na czytelny format
   formatBytes(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    
+    if (bytes === 0) return "0 Bytes";
+
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   }
 
   // Sprawdź czy użytkownik jest organizatorem wydarzenia
@@ -474,7 +492,7 @@ class StorageManager {
   // Pobierz wydarzenia utworzone przez użytkownika
   getUserEvents(userId) {
     const allEvents = this.getAllEvents();
-    return allEvents.filter(event => event.organizerId === userId);
+    return allEvents.filter((event) => event.organizerId === userId);
   }
 
   // ==================== HYBRYDOWY TRYB: API + localStorage ====================
@@ -487,22 +505,22 @@ class StorageManager {
     // Sprawdź czy API jest dostępne
     if (this.useApi && navigator.onLine && window.apiClient) {
       try {
-        console.log('[Storage] Fetching events from API...');
+        console.log("[Storage] Fetching events from API...");
         const apiEvents = await window.apiClient.getEvents(filters);
-        
+
         // Konwertuj z API do formatu frontendowego
-        const events = apiEvents.map(e => window.DataAdapter.eventFromApi(e));
-        
+        const events = apiEvents.map((e) => window.DataAdapter.eventFromApi(e));
+
         // Zaktualizuj cache
         this.saveCacheToLocalStorage(events);
-        
+
         return events;
       } catch (error) {
-        console.warn('[Storage] API failed, using cache:', error.message);
+        console.warn("[Storage] API failed, using cache:", error.message);
         return this.getEventsFromCache();
       }
     } else {
-      console.log('[Storage] Offline mode, using cache');
+      console.log("[Storage] Offline mode, using cache");
       return this.getEventsFromCache();
     }
   }
@@ -515,13 +533,13 @@ class StorageManager {
       try {
         const apiEvent = await window.apiClient.getEvent(id);
         const event = window.DataAdapter.eventFromApi(apiEvent);
-        
+
         // Zaktualizuj cache
         this.updateEventInCache(event);
-        
+
         return event;
       } catch (error) {
-        console.warn('[Storage] API failed, using cache:', error.message);
+        console.warn("[Storage] API failed, using cache:", error.message);
         return this.getEvent(id);
       }
     } else {
@@ -538,7 +556,7 @@ class StorageManager {
     // Walidacja
     const validation = window.DataAdapter.validateEventForApi(eventData);
     if (!validation.valid) {
-      throw new Error(validation.errors.join(', '));
+      throw new Error(validation.errors.join(", "));
     }
 
     // Najpierw zapisz lokalnie (dla instant feedback)
@@ -547,50 +565,55 @@ class StorageManager {
     // Spróbuj wysłać do API
     if (this.useApi && navigator.onLine && window.apiClient) {
       try {
-        console.log('[Storage] Saving event to API...');
-        
+        console.log("[Storage] Saving event to API...");
+
         // Konwertuj do formatu API
         const apiEventData = window.DataAdapter.eventToApi(localEvent);
-        
+
         let apiEvent;
-        if (localEvent.id && localEvent.id.toString().startsWith('event_')) {
+        if (localEvent.id && localEvent.id.toString().startsWith("event_")) {
           // Nowe wydarzenie (lokalne ID)
           apiEvent = await window.apiClient.createEvent(apiEventData);
         } else {
           // Aktualizacja istniejącego
-          apiEvent = await window.apiClient.updateEvent(localEvent.id, apiEventData);
+          apiEvent = await window.apiClient.updateEvent(
+            localEvent.id,
+            apiEventData
+          );
         }
-        
+
         // Zaktualizuj lokalne wydarzenie z ID z serwera
         const serverEvent = window.DataAdapter.eventFromApi(apiEvent);
         this.saveEvent(serverEvent);
-        
-        console.log('[Storage] Event saved to API successfully');
+
+        console.log("[Storage] Event saved to API successfully");
         return serverEvent;
-        
       } catch (error) {
-        console.warn('[Storage] API save failed, queuing for sync:', error.message);
-        
+        console.warn(
+          "[Storage] API save failed, queuing for sync:",
+          error.message
+        );
+
         // Dodaj do kolejki offline
         this.addToOfflineQueue({
-          action: 'create',
-          type: 'event',
+          action: "create",
+          type: "event",
           data: localEvent,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
-        
+
         return localEvent;
       }
     } else {
       // Offline - dodaj do kolejki
-      console.log('[Storage] Offline mode, queuing event');
+      console.log("[Storage] Offline mode, queuing event");
       this.addToOfflineQueue({
-        action: 'create',
-        type: 'event',
+        action: "create",
+        type: "event",
         data: localEvent,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
-      
+
       return localEvent;
     }
   }
@@ -606,25 +629,25 @@ class StorageManager {
     if (this.useApi && navigator.onLine && window.apiClient) {
       try {
         await window.apiClient.deleteEvent(eventId);
-        console.log('[Storage] Event deleted from API');
+        console.log("[Storage] Event deleted from API");
       } catch (error) {
-        console.warn('[Storage] API delete failed, queuing:', error.message);
-        
+        console.warn("[Storage] API delete failed, queuing:", error.message);
+
         // Dodaj do kolejki
         this.addToOfflineQueue({
-          action: 'delete',
-          type: 'event',
+          action: "delete",
+          type: "event",
           id: eventId,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
     } else {
       // Offline
       this.addToOfflineQueue({
-        action: 'delete',
-        type: 'event',
+        action: "delete",
+        type: "event",
         id: eventId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   }
@@ -636,14 +659,16 @@ class StorageManager {
     if (this.useApi && navigator.onLine && window.apiClient) {
       try {
         await window.apiClient.joinEvent(eventId);
-        console.log('[Storage] Joined event via API');
+        console.log("[Storage] Joined event via API");
         return true;
       } catch (error) {
-        console.warn('[Storage] API join failed:', error.message);
+        console.warn("[Storage] API join failed:", error.message);
         throw error;
       }
     } else {
-      throw new Error('Dołączenie do wydarzenia wymaga połączenia z internetem');
+      throw new Error(
+        "Dołączenie do wydarzenia wymaga połączenia z internetem"
+      );
     }
   }
 
@@ -658,7 +683,7 @@ class StorageManager {
       // Fallback na stare wydarzenia z localStorage
       return this.getAllEvents();
     } catch (error) {
-      console.error('[Storage] Cache read error:', error);
+      console.error("[Storage] Cache read error:", error);
       return this.getAllEvents();
     }
   }
@@ -668,20 +693,20 @@ class StorageManager {
       localStorage.setItem(this.cacheKey, JSON.stringify(events));
       console.log(`[Storage] Cached ${events.length} events`);
     } catch (error) {
-      console.error('[Storage] Cache write error:', error);
+      console.error("[Storage] Cache write error:", error);
     }
   }
 
   updateEventInCache(event) {
     const cache = this.getEventsFromCache();
-    const index = cache.findIndex(e => e.id === event.id);
-    
+    const index = cache.findIndex((e) => e.id === event.id);
+
     if (index >= 0) {
       cache[index] = event;
     } else {
       cache.push(event);
     }
-    
+
     this.saveCacheToLocalStorage(cache);
   }
 
@@ -692,23 +717,28 @@ class StorageManager {
       const queueJson = localStorage.getItem(this.offlineQueueKey);
       return queueJson ? JSON.parse(queueJson) : [];
     } catch (error) {
-      console.error('[Storage] Queue load error:', error);
+      console.error("[Storage] Queue load error:", error);
       return [];
     }
   }
 
   saveOfflineQueue() {
     try {
-      localStorage.setItem(this.offlineQueueKey, JSON.stringify(this.offlineQueue));
+      localStorage.setItem(
+        this.offlineQueueKey,
+        JSON.stringify(this.offlineQueue)
+      );
     } catch (error) {
-      console.error('[Storage] Queue save error:', error);
+      console.error("[Storage] Queue save error:", error);
     }
   }
 
   addToOfflineQueue(item) {
     this.offlineQueue.push(item);
     this.saveOfflineQueue();
-    console.log(`[Storage] Added to offline queue: ${item.action} ${item.type}`);
+    console.log(
+      `[Storage] Added to offline queue: ${item.action} ${item.type}`
+    );
   }
 
   /**
@@ -716,32 +746,34 @@ class StorageManager {
    */
   async syncOfflineQueue() {
     if (!navigator.onLine || !window.apiClient) {
-      console.log('[Storage] Cannot sync: offline or no API client');
+      console.log("[Storage] Cannot sync: offline or no API client");
       return;
     }
 
     if (this.offlineQueue.length === 0) {
-      console.log('[Storage] Offline queue is empty');
+      console.log("[Storage] Offline queue is empty");
       return;
     }
 
-    console.log(`[Storage] Syncing ${this.offlineQueue.length} queued items...`);
+    console.log(
+      `[Storage] Syncing ${this.offlineQueue.length} queued items...`
+    );
 
     const failedItems = [];
 
     for (const item of this.offlineQueue) {
       try {
-        if (item.type === 'event') {
-          if (item.action === 'create') {
+        if (item.type === "event") {
+          if (item.action === "create") {
             const apiEventData = window.DataAdapter.eventToApi(item.data);
             const apiEvent = await window.apiClient.createEvent(apiEventData);
-            
+
             // Zaktualizuj lokalne wydarzenie z ID z serwera
             const serverEvent = window.DataAdapter.eventFromApi(apiEvent);
             this.saveEvent(serverEvent);
-            
+
             console.log(`[Storage] Synced event: ${item.data.title}`);
-          } else if (item.action === 'delete') {
+          } else if (item.action === "delete") {
             await window.apiClient.deleteEvent(item.id);
             console.log(`[Storage] Synced delete: ${item.id}`);
           }
@@ -757,12 +789,16 @@ class StorageManager {
     this.saveOfflineQueue();
 
     const syncedCount = this.offlineQueue.length - failedItems.length;
-    console.log(`[Storage] Sync complete: ${syncedCount} synced, ${failedItems.length} failed`);
+    console.log(
+      `[Storage] Sync complete: ${syncedCount} synced, ${failedItems.length} failed`
+    );
 
     // Powiadom UI o synchronizacji
-    document.dispatchEvent(new CustomEvent('offlineSyncComplete', {
-      detail: { synced: syncedCount, failed: failedItems.length }
-    }));
+    document.dispatchEvent(
+      new CustomEvent("offlineSyncComplete", {
+        detail: { synced: syncedCount, failed: failedItems.length },
+      })
+    );
   }
 
   /**
@@ -771,11 +807,11 @@ class StorageManager {
   getOfflineQueueStatus() {
     return {
       count: this.offlineQueue.length,
-      items: this.offlineQueue.map(item => ({
+      items: this.offlineQueue.map((item) => ({
         action: item.action,
         type: item.type,
-        timestamp: item.timestamp
-      }))
+        timestamp: item.timestamp,
+      })),
     };
   }
 }
@@ -788,6 +824,5 @@ window.saveEvent = (eventData) => window.storageManager.saveEvent(eventData);
 window.getEvent = (id) => window.storageManager.getEvent(id);
 window.getAllEvents = () => window.storageManager.getAllEvents();
 window.deleteEvent = (id) => window.storageManager.deleteEvent(id);
-window.getEventsFiltered = (filter) => window.storageManager.getEventsFiltered(filter);
-
-
+window.getEventsFiltered = (filter) =>
+  window.storageManager.getEventsFiltered(filter);

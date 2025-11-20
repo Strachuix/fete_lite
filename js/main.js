@@ -795,6 +795,8 @@ class FeteLiteApp {
       if (events.length === 0) {
         console.log('[App] Brak wydarzeń - przykładowe dane zostaną załadowane przez SampleDataManager');
         // SampleDataManager automatycznie załaduje wszystkie 8 przykładowych wydarzeń
+        var sampleDataManager = new SampleDataManager();
+        await sampleDataManager.loadSampleData();
       }
     } catch (error) {
       console.error('[App] Błąd podczas sprawdzania przykładowych danych:', error);

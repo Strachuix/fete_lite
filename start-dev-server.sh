@@ -7,7 +7,7 @@ PORT=${1:-8080}
 echo "🚀 Uruchamianie serwera HTTP na porcie $PORT..."
 echo "📂 Serwowanie plików z: $(pwd)"
 echo "🌐 Aplikacja będzie dostępna pod: http://localhost:$PORT"
-echo "🔗 Backend API: https://backend-production-bb92.up.railway.app/api/v1"
+echo "🔗 Backend API: fetebackend-production.up.railway.app"
 echo ""
 echo "Aby zatrzymać serwer, naciśnij Ctrl+C"
 echo ""
