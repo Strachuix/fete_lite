@@ -150,7 +150,7 @@ class AuthManager {
             // Prawdziwe logowanie przez API
             try {
                 const user = await window.apiClient.login(credentials.email, credentials.password);
-                
+                console.log('Logged in user from API:', user);
                 // Użyj DataAdapter do konwersji
                 const frontendUser = window.DataAdapter.userFromApi(user);
                 

@@ -124,6 +124,16 @@ class ApiClient {
 
   // ==================== Authentication ====================
 
+  async sha256(message) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(message);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    return hashHex;
+  }
+
+
   async register(userData) {
     const response = await this.request('/auth/register', {
       method: 'POST',
@@ -139,17 +149,17 @@ class ApiClient {
   }
 
   async login(email, password) {
-    const response = await this.request('/auth/login', {
+    password = await this.sha256(password);
+    var response = await this.request('login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       skipAuth: true
     });
-
     // Zapisz tokeny
-    this.setToken(response.data.tokens.access_token);
-    this.setRefreshToken(response.data.tokens.refresh_token);
-
-    return response.data.user;
+    // this.setToken(response.data.tokens.access_token);
+    // this.setRefreshToken(response.data.tokens.refresh_token);
+    
+    return response.user;
   }
 
   async refreshAccessToken() {

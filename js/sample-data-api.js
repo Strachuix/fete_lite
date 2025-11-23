@@ -193,7 +193,7 @@ class SampleDataManager {
       const apiUrl =
         window.Config?.getApiUrl?.() ||
         "https://backend-production-bb92.up.railway.app/";
-      const endpoint = `${apiUrl}Fete_backend/sample-users.php`;
+      const endpoint = `${apiUrl}sample-users`;
 
       console.log(`[SampleData] Fetching sample users from: ${endpoint}`);
 

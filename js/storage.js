@@ -71,7 +71,7 @@ class StorageManager {
     try {
       if (this.isLocalStorageAvailable) {
         const events = this.getAllEvents();
-        return events.find((event) => event.id === id) || null;
+        return events.find((event) => event.id == id) || null;
       } else {
         return this.fallbackStorage.get(id) || null;
       }
