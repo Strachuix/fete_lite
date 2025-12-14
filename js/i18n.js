@@ -172,6 +172,7 @@ class I18n {
         "create.dressCodeThemeDesc": "Według tematu wydarzenia",
         "create.dressCodeCustomDesc": "Wpisz własne wymagania",
         "create.customDressCodeLabel": "Wpisz własne wymagania:",
+        "create.accommodation": "Nocleg",
         "create.accommodationAvailable": "Możliwość noclegu",
         "create.accommodationInfo": "Informacje o noclegu",
         "create.accommodationInfoPlaceholder":
@@ -638,6 +639,7 @@ class I18n {
         "create.dressCodeThemeDesc": "According to event theme",
         "create.dressCodeCustomDesc": "Enter custom requirements",
         "create.customDressCodeLabel": "Enter custom requirements:",
+        "create.accommodation": "Accommodation",
         "create.accommodationAvailable": "Accommodation available",
         "create.accommodationInfo": "Accommodation information",
         "create.accommodationInfoPlaceholder":
