@@ -355,6 +355,19 @@ class EventManager {
       }
       
       // Zastosuj filtr czasu (all/upcoming/past)
+      // If user is not authenticated, only show public events
+      // Determine login by validating bootstrap token payload conservatively
+      function parseBootstrapToken(token) { try { return JSON.parse(atob(token)); } catch (e) { return null; } }
+      const token = localStorage.getItem('access_token');
+      const isLoggedIn = !!(token && parseBootstrapToken(token));
+
+      if (!isLoggedIn) {
+        events = events.filter(e => {
+          if (!Object.prototype.hasOwnProperty.call(e, 'is_public')) return true;
+          return !!e.is_public;
+        });
+      }
+
       events = this.applyFilter(events, this.currentFilter);
       
       // Zastosuj filtr tematu

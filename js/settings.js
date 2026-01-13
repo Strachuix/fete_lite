@@ -359,9 +359,12 @@ class SettingsManager {
 // Inicjalizacja po załadowaniu DOM
 document.addEventListener('DOMContentLoaded', async () => {
   // Prevent unauthenticated access to settings page
-  const hasToken = (window.apiClient && typeof window.apiClient.hasValidToken === 'function')
-    ? window.apiClient.hasValidToken()
-    : !!localStorage.getItem('access_token');
+  function parseBootstrapToken(token) {
+    try { return JSON.parse(atob(token)); } catch (e) { return null; }
+  }
+
+  const token = localStorage.getItem('access_token');
+  const hasToken = token && parseBootstrapToken(token);
 
   if (!hasToken) {
     // Redirect to auth page with a hint to return to settings after login

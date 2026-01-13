@@ -37,16 +37,39 @@ class NavigationManager {
   generateNavigationHTML() {
     const isMobile = window.innerWidth < 768;
 
-    // Determine login status. Prefer apiClient helper if available, fallback to localStorage key.
-    const isLoggedIn = (window.apiClient && typeof window.apiClient.hasValidToken === 'function')
-      ? window.apiClient.hasValidToken()
-      : !!localStorage.getItem('access_token');
+    // Determine login status. Prefer apiClient helper if available; validate token payload conservatively.
+    function parseBootstrapToken(token) {
+      try {
+        // token is base64 of JSON in bootstrap implementation
+        const decoded = atob(token);
+        const obj = JSON.parse(decoded);
+        return obj && (obj.user_id || obj.email) ? obj : null;
+      } catch (e) {
+        return null;
+      }
+    }
 
-    // If not logged in, hide Settings link to prevent unauthenticated access.
+    let isLoggedIn = false;
+    if (window.apiClient && typeof window.apiClient.hasValidToken === 'function' && window.apiClient.hasValidToken()) {
+      const token = localStorage.getItem('access_token');
+      isLoggedIn = !!(token && parseBootstrapToken(token));
+    } else {
+      const token = localStorage.getItem('access_token');
+      isLoggedIn = !!(token && parseBootstrapToken(token));
+    }
+
+    // If not logged in, hide Settings link and Create link to prevent unauthenticated access.
     const settingsLink = isLoggedIn
       ? `<a href="./settings.html" class="nav-item ${this.currentPage === 'settings' ? 'active' : ''}" data-page="settings">
           <span class="nav-icon">⚙️</span>
           <span class="nav-label" data-i18n="nav.settings">Ustawienia</span>
+        </a>`
+      : '';
+
+    const createLink = isLoggedIn
+      ? `<a href="./create-event.html" class="nav-item ${this.currentPage === 'create' ? 'active' : ''}" data-page="create">
+          <span class="nav-icon">➕</span>
+          <span class="nav-label" data-i18n="nav.create">Utwórz</span>
         </a>`
       : '';
 
@@ -56,10 +79,7 @@ class NavigationManager {
           <span class="nav-icon">🏠</span>
           <span class="nav-label" data-i18n="nav.home">Strona główna</span>
         </a>
-        <a href="./create-event.html" class="nav-item ${this.currentPage === 'create' ? 'active' : ''}" data-page="create">
-          <span class="nav-icon">➕</span>
-          <span class="nav-label" data-i18n="nav.create">Utwórz</span>
-        </a>
+        ${createLink}
         ${settingsLink}
         <a href="./auth.html" class="nav-item ${this.currentPage === 'auth' ? 'active' : ''}" data-page="auth">
           <span class="nav-icon">👤</span>

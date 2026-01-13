@@ -51,6 +51,11 @@ class DataAdapter {
       );
     }
 
+    // Public visibility
+    if (frontendEvent.is_public !== undefined) {
+      apiEvent.is_public = frontendEvent.is_public ? 1 : 0;
+    }
+
     return apiEvent;
   }
 
@@ -101,6 +106,11 @@ class DataAdapter {
       frontendEvent.images = apiEvent.images;
     } else {
       frontendEvent.images = [];
+    }
+
+    // Public visibility flag
+    if (apiEvent.is_public !== undefined) {
+      frontendEvent.is_public = !!apiEvent.is_public;
     }
 
     // Dodaj dane organizatora jeśli dostępne

@@ -1,5 +1,15 @@
 // Skrypt specyficzny dla strony tworzenia wydarzenia
 document.addEventListener('DOMContentLoaded', function() {
+    // Redirect unauthenticated users to login. Validate bootstrap token payload.
+    function parseBootstrapToken(token) { try { return JSON.parse(atob(token)); } catch (e) { return null; } }
+    const token = localStorage.getItem('access_token');
+    const isLoggedIn = token && parseBootstrapToken(token);
+    if (!isLoggedIn) {
+        const redirectParam = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `/auth.html?redirect=${redirectParam}`;
+        return;
+    }
+
     // Inicjalizacja formularza
     initCreateEventForm();
     
