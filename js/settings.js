@@ -358,6 +358,18 @@ class SettingsManager {
 
 // Inicjalizacja po załadowaniu DOM
 document.addEventListener('DOMContentLoaded', async () => {
+  // Prevent unauthenticated access to settings page
+  const hasToken = (window.apiClient && typeof window.apiClient.hasValidToken === 'function')
+    ? window.apiClient.hasValidToken()
+    : !!localStorage.getItem('access_token');
+
+  if (!hasToken) {
+    // Redirect to auth page with a hint to return to settings after login
+    const redirectParam = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/auth.html?redirect=${redirectParam}`;
+    return;
+  }
+
   window.settingsManager = new SettingsManager();
 });
 

@@ -135,17 +135,19 @@ class ApiClient {
 
 
   async register(userData) {
-    const response = await this.request('/auth/register', {
+    const response = await this.request('/register', {
       method: 'POST',
       body: JSON.stringify(userData),
       skipAuth: true
     });
 
     // Zapisz tokeny
-    this.setToken(response.data.tokens.access_token);
-    this.setRefreshToken(response.data.tokens.refresh_token);
+    if (response.data && response.data.tokens) {
+      this.setToken(response.data.tokens.access_token);
+      this.setRefreshToken(response.data.tokens.refresh_token);
+    }
 
-    return response.data.user;
+    return response.data.user ?? response.data.user;
   }
 
   async login(email, password) {
@@ -155,11 +157,11 @@ class ApiClient {
       body: JSON.stringify({ email, password }),
       skipAuth: true
     });
-    // Zapisz tokeny
-    // this.setToken(response.data.tokens.access_token);
-    // this.setRefreshToken(response.data.tokens.refresh_token);
-    
-    return response.user;
+    if (response.data && response.data.tokens) {
+      this.setToken(response.data.tokens.access_token);
+      this.setRefreshToken(response.data.tokens.refresh_token);
+    }
+    return response.data.user ?? response.user;
   }
 
   async refreshAccessToken() {

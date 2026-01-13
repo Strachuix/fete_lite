@@ -36,7 +36,20 @@ class NavigationManager {
   // Wygeneruj HTML nawigacji
   generateNavigationHTML() {
     const isMobile = window.innerWidth < 768;
-    
+
+    // Determine login status. Prefer apiClient helper if available, fallback to localStorage key.
+    const isLoggedIn = (window.apiClient && typeof window.apiClient.hasValidToken === 'function')
+      ? window.apiClient.hasValidToken()
+      : !!localStorage.getItem('access_token');
+
+    // If not logged in, hide Settings link to prevent unauthenticated access.
+    const settingsLink = isLoggedIn
+      ? `<a href="./settings.html" class="nav-item ${this.currentPage === 'settings' ? 'active' : ''}" data-page="settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label" data-i18n="nav.settings">Ustawienia</span>
+        </a>`
+      : '';
+
     return `
       <nav class="bottom-nav" role="navigation" aria-label="Główna nawigacja">
         <a href="./" class="nav-item ${this.currentPage === 'home' ? 'active' : ''}" data-page="home">
@@ -47,10 +60,7 @@ class NavigationManager {
           <span class="nav-icon">➕</span>
           <span class="nav-label" data-i18n="nav.create">Utwórz</span>
         </a>
-        <a href="./settings.html" class="nav-item ${this.currentPage === 'settings' ? 'active' : ''}" data-page="settings">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-label" data-i18n="nav.settings">Ustawienia</span>
-        </a>
+        ${settingsLink}
         <a href="./auth.html" class="nav-item ${this.currentPage === 'auth' ? 'active' : ''}" data-page="auth">
           <span class="nav-icon">👤</span>
           <span class="nav-label" data-i18n="nav.login">Logowanie</span>

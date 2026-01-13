@@ -495,6 +495,101 @@ class StorageManager {
     return allEvents.filter((event) => event.organizerId === userId);
   }
 
+  // ==================== FAVORITES (ULUBIONE) ====================
+
+  getFavoritesKey() {
+    return 'fete_favorites';
+  }
+
+  getFavorites() {
+    try {
+      const json = localStorage.getItem(this.getFavoritesKey());
+      return json ? JSON.parse(json) : [];
+    } catch (e) {
+      console.error('[Storage] Failed to read favorites:', e);
+      return [];
+    }
+  }
+
+  isFavorite(eventId) {
+    const fav = this.getFavorites();
+    return fav.includes(eventId);
+  }
+
+  addFavorite(eventId) {
+    try {
+      const fav = this.getFavorites();
+      if (!fav.includes(eventId)) {
+        fav.push(eventId);
+        localStorage.setItem(this.getFavoritesKey(), JSON.stringify(fav));
+        document.dispatchEvent(new CustomEvent('favoritesChanged', { detail: { eventId, action: 'add' } }));
+      }
+      return true;
+    } catch (e) {
+      console.error('[Storage] Failed to add favorite:', e);
+      return false;
+    }
+  }
+
+  removeFavorite(eventId) {
+    try {
+      let fav = this.getFavorites();
+      fav = fav.filter((id) => id !== eventId);
+      localStorage.setItem(this.getFavoritesKey(), JSON.stringify(fav));
+      document.dispatchEvent(new CustomEvent('favoritesChanged', { detail: { eventId, action: 'remove' } }));
+      return true;
+    } catch (e) {
+      console.error('[Storage] Failed to remove favorite:', e);
+      return false;
+    }
+  }
+
+  // Pobierz wydarzenia, w których aktualny użytkownik uczestniczy (localStorage)
+  getUserParticipatingEvents(userId) {
+    const events = this.getAllEvents();
+    const participating = [];
+
+    events.forEach((event) => {
+      try {
+        const partJson = localStorage.getItem(`event_participants_${event.id}`);
+        if (!partJson) return;
+        const participants = JSON.parse(partJson);
+        if (participants && participants.some((p) => (p.id == userId || p.email == userId))) {
+          participating.push(event);
+        }
+      } catch (e) {
+        // ignore parse errors
+      }
+    });
+
+    return participating;
+  }
+
+  // Hybrydowa wersja uczestnictwa — preferuje API
+  async getUserParticipatingEventsHybrid(userId) {
+    if (this.useApi && navigator.onLine && window.apiClient) {
+      try {
+        const events = await this.getAllEventsHybrid();
+        const participating = [];
+        for (const event of events) {
+          try {
+            const participants = await window.apiClient.getEventParticipants(event.id);
+            if (participants && participants.some((p) => p.id == userId || p.email == userId)) {
+              participating.push(event);
+            }
+          } catch (e) {
+            // fallback to local data
+            return this.getUserParticipatingEvents(userId);
+          }
+        }
+        return participating;
+      } catch (e) {
+        return this.getUserParticipatingEvents(userId);
+      }
+    }
+    return this.getUserParticipatingEvents(userId);
+  }
+
   // ==================== HYBRYDOWY TRYB: API + localStorage ====================
 
   /**

@@ -87,6 +87,27 @@ class EventManager {
     // Nasłuchuj na zmiany w storage
     document.addEventListener('eventSaved', this.handleEventSaved);
     document.addEventListener('eventDeleted', this.handleEventDeleted);
+    // View filter (all | mine | participating | favorites)
+    this.viewFilter = 'all';
+    // Setup UI bindings for view filters (if present)
+    if (document.readyState !== 'loading') {
+      this.setupViewFilters();
+    } else {
+      document.addEventListener('DOMContentLoaded', () => this.setupViewFilters());
+    }
+  }
+
+  setupViewFilters() {
+    const buttons = document.querySelectorAll('.btn-view-filter');
+    if (!buttons || buttons.length === 0) return;
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.viewFilter = btn.dataset.view || 'all';
+        this.loadAndDisplayEvents();
+      });
+    });
   }
 
   // === TWORZENIE WYDARZENIA ===
@@ -293,8 +314,45 @@ class EventManager {
   async loadAndDisplayEvents() {
     try {
       showLoadingState('events-container');
-      
-      let events = window.storageManager.getAllEvents();
+      // Determine source based on viewFilter
+      let events = [];
+      const currentUser = window.authManager ? window.authManager.getCurrentUser() : null;
+      const currentUserId = currentUser ? (currentUser.id || currentUser.email) : null;
+
+      if (this.viewFilter === 'mine') {
+        if (window.storageManager && typeof window.storageManager.getUserEventsHybrid === 'function') {
+          events = await window.storageManager.getUserEventsHybrid(currentUserId);
+        } else if (window.storageManager) {
+          events = window.storageManager.getUserEvents(currentUserId);
+        }
+      } else if (this.viewFilter === 'participating') {
+        if (window.storageManager && typeof window.storageManager.getUserParticipatingEventsHybrid === 'function') {
+          events = await window.storageManager.getUserParticipatingEventsHybrid(currentUserId);
+        } else if (window.storageManager) {
+          events = window.storageManager.getUserParticipatingEvents(currentUserId);
+        }
+      } else if (this.viewFilter === 'favorites') {
+        // load all and filter by favorites
+        let all = [];
+        if (window.storageManager && typeof window.storageManager.getAllEventsHybrid === 'function') {
+          all = await window.storageManager.getAllEventsHybrid();
+        } else if (window.storageManager) {
+          all = window.storageManager.getAllEvents();
+        }
+        const favIds = (window.storageManager && typeof window.storageManager.getFavorites === 'function') ? window.storageManager.getFavorites() : [];
+        const favSet = new Set((favIds || []).map(id => String(id)));
+        events = all.filter(e => favSet.has(String(e.id)));
+      } else {
+        // default: all events (hybrid)
+        if (window.storageManager && typeof window.storageManager.getAllEventsHybrid === 'function') {
+          events = await window.storageManager.getAllEventsHybrid();
+        } else if (window.storageManager && typeof window.storageManager.getAllEvents === 'function') {
+          events = window.storageManager.getAllEvents();
+        } else if (window.apiClient && typeof window.apiClient.getEvents === 'function') {
+          const apiEvents = await window.apiClient.getEvents();
+          events = apiEvents.map((e) => window.DataAdapter.eventFromApi(e));
+        }
+      }
       
       // Zastosuj filtr czasu (all/upcoming/past)
       events = this.applyFilter(events, this.currentFilter);
@@ -437,6 +495,38 @@ class EventManager {
       shareBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.shareEvent(event);
+      });
+    }
+
+    const favoriteBtn = card.querySelector('.favorite-btn');
+    if (favoriteBtn) {
+      const setFavUI = (isFav) => {
+        favoriteBtn.innerHTML = isFav ? '<span>❤</span>' : '<span>♡</span>';
+        if (isFav) favoriteBtn.classList.add('active'); else favoriteBtn.classList.remove('active');
+      };
+
+      // Initialize state
+      try {
+        const isFav = window.storageManager && typeof window.storageManager.isFavorite === 'function' ? window.storageManager.isFavorite(event.id) : false;
+        setFavUI(isFav);
+      } catch (e) {
+        setFavUI(false);
+      }
+
+      favoriteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        try {
+          const isFav = window.storageManager && typeof window.storageManager.isFavorite === 'function' ? window.storageManager.isFavorite(event.id) : false;
+          if (isFav) {
+            window.storageManager.removeFavorite(event.id);
+            setFavUI(false);
+          } else {
+            window.storageManager.addFavorite(event.id);
+            setFavUI(true);
+          }
+        } catch (err) {
+          console.error('Favorite toggle failed', err);
+        }
       });
     }
     

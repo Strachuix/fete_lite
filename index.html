@@ -114,6 +114,14 @@
             </button>
           </div>
 
+          <!-- Widok: Wszystkie / Moje / Biorę udział / Ulubione -->
+          <div class="view-filter-bar" style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-view-filter active" data-view="all">Wszystkie</button>
+            <button class="btn btn-secondary btn-view-filter" data-view="mine">Moje</button>
+            <button class="btn btn-secondary btn-view-filter" data-view="participating">Biorę udział</button>
+            <button class="btn btn-secondary btn-view-filter" data-view="favorites">Ulubione</button>
+          </div>
+
           <!-- Filtry przeniesione do modala (otwierane przyciskiem 'Dodaj filtry') -->
           <!-- The filters themselves live in #filters-modal (see bottom of page) -->
         </div>
@@ -232,6 +240,13 @@
               aria-label="Udostępnij wydarzenie"
             >
               <span>🔗</span>
+            </button>
+            <button
+              class="event-action-btn favorite-btn hover-glow"
+              aria-label="Ulubione"
+              title="Dodaj do ulubionych"
+            >
+              <span>♡</span>
             </button>
           </div>
         </div>

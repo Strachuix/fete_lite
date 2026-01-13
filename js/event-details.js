@@ -16,7 +16,16 @@ async function initEventDetails() {
             return;
         }
         
-        const event = await getEvent(eventId);
+                // Load event via hybrid storage/API if available, otherwise fallback
+                let event = null;
+                if (window.storageManager && typeof window.storageManager.getEventHybrid === 'function') {
+                    event = await window.storageManager.getEventHybrid(eventId);
+                } else if (window.storageManager && typeof window.storageManager.getEvent === 'function') {
+                    event = window.storageManager.getEvent(eventId);
+                } else if (window.apiClient && typeof window.apiClient.getEvent === 'function') {
+                    const apiEvent = await window.apiClient.getEvent(eventId);
+                    event = window.DataAdapter ? window.DataAdapter.eventFromApi(apiEvent) : apiEvent;
+                }
         
         if (!event) {
             showErrorState('details.eventNotFound', 'Wydarzenie nie znalezione');
