@@ -1,0 +1,772 @@
+{
+  "project": {
+    "name": "Fete Lite",
+    "version": "1.1.7",
+    "description": "Lekka aplikacja PWA (Progressive Web App) do organizowania wydarzeń towarzyskich. Umożliwia tworzenie, przeglądanie, edytowanie i udostępnianie wydarzeń, z pełną obsługą trybu offline.",
+    "language": "pl",
+    "type": "PWA (Progressive Web App)",
+    "architecture": "Frontend-only (Vanilla JS) z opcjonalnym backendem REST API",
+    "primaryColor": "#673ab7",
+    "backendUrl": "https://fetebackend-production.up.railway.app/"
+  },
+
+  "technologyStack": {
+    "frontend": {
+      "language": "JavaScript ES6+ (Vanilla, bez frameworków)",
+      "markup": "HTML5",
+      "styling": "CSS3 z Custom Properties (zmienne CSS), Flexbox, Grid",
+      "architecture": "Wzorzec modułowy (Module Pattern) z globalnymi klasami na window"
+    },
+    "externalLibraries": [
+      {
+        "name": "Leaflet.js",
+        "version": "1.9.4",
+        "purpose": "Interaktywne mapy (zamiennik Google Maps)",
+        "source": "https://unpkg.com/leaflet@1.9.4/",
+        "loadStrategy": "Leniwe ładowanie (tylko gdy potrzebna mapa)"
+      },
+      {
+        "name": "OpenStreetMap",
+        "purpose": "Kafelki (tiles) mapy – bezpłatny serwer",
+        "source": "https://tile.openstreetmap.org/"
+      },
+      {
+        "name": "QRCode.js",
+        "version": "1.5.3",
+        "purpose": "Generowanie kodów QR",
+        "sources": [
+          "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/lib/browser.js",
+          "https://unpkg.com/qrcode@1.5.3/lib/browser.js",
+          "./js/qrcode.min.js (lokalny fallback)"
+        ]
+      },
+      {
+        "name": "Nominatim",
+        "purpose": "Geokodowanie i odwrotne geokodowanie adresów",
+        "source": "https://nominatim.org/"
+      }
+    ],
+    "browserAPIs": [
+      "Service Worker API – obsługa offline i cachowanie",
+      "Notification API – powiadomienia push",
+      "Geolocation API – wykrywanie lokalizacji użytkownika",
+      "LocalStorage API – przechowywanie danych i ustawień",
+      "Fetch API – zapytania HTTP z obsługą błędów i retry",
+      "Web Crypto API – zarządzanie tokenami JWT",
+      "IntersectionObserver API – leniwe ładowanie obrazów"
+    ],
+    "backend": {
+      "type": "Opcjonalny REST API",
+      "technology": "PHP 8.0+ / MySQL 8.0+",
+      "auth": "JWT (JSON Web Token) z automatycznym odświeżaniem",
+      "deployment": "Railway.app (Docker)"
+    }
+  },
+
+  "directoryStructure": {
+    "root": "/",
+    "files": {
+      "index.html": "Strona główna – lista wydarzeń z wyszukiwaniem i filtrami",
+      "create-event.html": "Formularz tworzenia/edycji wydarzeń (wielosekcyjny)",
+      "event-details.html": "Szczegóły wydarzenia – mapa, QR kod, eksport do kalendarza",
+      "auth.html": "Logowanie i rejestracja użytkownika (JWT)",
+      "settings.html": "Ustawienia aplikacji – motyw, język, powiadomienia",
+      "clear-cache.html": "Narzędzie do czyszczenia cache (debug)",
+      "test-qr.html": "Strona testowa do generowania kodów QR",
+      "test-search.html": "Strona testowa wyszukiwarki",
+      "manifest.json": "Manifest PWA – konfiguracja instalacji, ikony, skróty",
+      "service-worker.js": "Service Worker – cache offline, strategie cachowania",
+      "test-integration.js": "Testy integracyjne API",
+      "test-registration.json": "Dane testowe do rejestracji",
+      "start-dev-server.sh": "Skrypt uruchamiający lokalny serwer deweloperski (Bash)",
+      "start-dev-server.ps1": "Skrypt uruchamiający lokalny serwer deweloperski (PowerShell)",
+      "README.md": "Główna dokumentacja projektu",
+      "MAP_OPTIMIZATION.md": "Dokumentacja optymalizacji ładowania map",
+      "ORGANIZER_FEATURE.md": "Dokumentacja systemu organizatora wydarzeń"
+    },
+    "directories": {
+      "js/": "Wszystkie moduły JavaScript aplikacji (~27 plików, ~8000 linii kodu)",
+      "css/": "Pliki stylów CSS (~7 plików, ~4500 linii)",
+      "images/": "Grafiki – logo, ikony PWA (SVG i PNG)"
+    }
+  },
+
+  "javascriptModules": {
+    "core": [
+      {
+        "file": "js/config.js",
+        "class": "Config",
+        "purpose": "Konfiguracja środowiska – automatyczne wykrywanie URL backendu",
+        "exports": "window.Config",
+        "methods": [
+          "Config.getApiUrl() → string – zwraca URL backendu (Railway.app)",
+          "Config.isDevelopment() → boolean – czy środowisko deweloperskie (localhost)",
+          "Config.isProduction() → boolean",
+          "Config.getEnvironment() → 'development' | 'production'"
+        ]
+      },
+      {
+        "file": "js/main.js",
+        "purpose": "Inicjalizacja aplikacji i koordynacja modułów",
+        "role": "Punkt wejścia – ładuje i inicjalizuje wszystkie pozostałe moduły"
+      },
+      {
+        "file": "js/storage.js",
+        "class": "Storage",
+        "lines": 923,
+        "purpose": "Warstwa abstrakcji nad localStorage – zarządzanie danymi lokalnie",
+        "exports": "window.Storage",
+        "capabilities": [
+          "CRUD operacje na wydarzeniach",
+          "Offline queue – kolejka operacji do synchronizacji gdy przywrócone połączenie",
+          "Zarządzanie ustawieniami",
+          "Importowanie i eksportowanie danych"
+        ],
+        "storageKeys": {
+          "events": "fete-lite-events",
+          "settings": "fete-lite-settings",
+          "offlineQueue": "fete-lite-offline-queue",
+          "language": "fete-lite-language",
+          "accessToken": "access_token",
+          "refreshToken": "refresh_token",
+          "notificationSettings": "notificationSettings"
+        }
+      },
+      {
+        "file": "js/events.js",
+        "purpose": "Logika biznesowa zarządzania wydarzeniami – tworzenie, filtrowanie, sortowanie",
+        "exports": "window.EventManager"
+      },
+      {
+        "file": "js/i18n.js",
+        "purpose": "System internacjonalizacji – obsługa języka polskiego i angielskiego",
+        "exports": "window.i18n",
+        "languages": ["pl (domyślny)", "en"],
+        "detection": "Automatyczne wykrywanie języka przeglądarki, nadpisane przez ustawienia użytkownika"
+      }
+    ],
+    "apiAndData": [
+      {
+        "file": "js/api-client.js",
+        "class": "ApiClient",
+        "purpose": "Klient HTTP REST API z autoryzacją JWT i automatycznym odświeżaniem tokenów",
+        "exports": "window.ApiClient",
+        "features": [
+          "Automatyczne dołączanie nagłówka Authorization: Bearer <token>",
+          "Automatyczne odświeżanie wygasłego tokenu JWT",
+          "Logika ponowienia (retry) przy błędach sieciowych",
+          "Obsługa błędów 401/403"
+        ]
+      },
+      {
+        "file": "js/data-adapter.js",
+        "class": "DataAdapter",
+        "purpose": "Konwersja danych między formatem frontendu (camelCase) a backendem (snake_case)",
+        "exports": "window.DataAdapter",
+        "methods": [
+          "DataAdapter.toBackend(event) – konwertuje event na format API",
+          "DataAdapter.fromBackend(apiEvent) – konwertuje odpowiedź API na format frontendu"
+        ]
+      },
+      {
+        "file": "js/auth.js",
+        "class": "AuthManager",
+        "purpose": "Zarządzanie uwierzytelnieniem – logowanie, rejestracja, wylogowanie",
+        "exports": "window.AuthManager",
+        "endpoints": {
+          "login": "POST /api/v1/auth/login",
+          "register": "POST /api/v1/auth/register",
+          "refreshToken": "POST /api/v1/auth/refresh"
+        }
+      },
+      {
+        "file": "js/network.js",
+        "lines": 507,
+        "purpose": "Monitorowanie stanu sieci – wykrywanie offline/online, zarządzanie kolejką synchronizacji",
+        "exports": "window.NetworkManager",
+        "features": [
+          "Słuchanie zdarzeń online/offline",
+          "Automatyczna synchronizacja przy przywróceniu połączenia",
+          "Wskaźnik stanu połączenia w UI"
+        ]
+      },
+      {
+        "file": "js/sample-data-api.js",
+        "lines": 371,
+        "purpose": "Ładowanie przykładowych/demonstracyjnych danych wydarzeń",
+        "exports": "window.SampleDataAPI"
+      }
+    ],
+    "features": [
+      {
+        "file": "js/qr.js",
+        "lines": 871,
+        "purpose": "Generowanie kodów QR dla wydarzeń z mechanizmem fallback dla źródeł biblioteki",
+        "exports": "window.QRManager"
+      },
+      {
+        "file": "js/qrcode.min.js",
+        "purpose": "Zminifikowana biblioteka QR code – lokalny fallback gdy CDN niedostępny"
+      },
+      {
+        "file": "js/geolocation.js",
+        "purpose": "Obsługa geolokalizacji – wykrywanie pozycji, integracja z mapą Leaflet, Nominatim geocoding",
+        "exports": "window.GeolocationManager"
+      },
+      {
+        "file": "js/ics-export.js",
+        "purpose": "Eksport wydarzeń do formatu iCalendar (.ics) – kompatybilny z Google Calendar, Outlook, Apple Calendar",
+        "exports": "window.ICSExporter"
+      },
+      {
+        "file": "js/notifications.js",
+        "lines": 531,
+        "purpose": "System powiadomień push – zarządzanie uprawnieniami, planowanie przypomnień",
+        "exports": "window.NotificationManager",
+        "features": [
+          "Prośba o uprawnienie do powiadomień",
+          "Planowanie przypomnień przed wydarzeniem",
+          "Konfigurowalne czasy wyprzedzenia"
+        ]
+      },
+      {
+        "file": "js/create-event.js",
+        "purpose": "Obsługa formularza tworzenia/edycji wydarzenia – walidacja, przesyłanie danych",
+        "exports": "window.CreateEventManager"
+      },
+      {
+        "file": "js/event-details.js",
+        "purpose": "Logika strony szczegółów wydarzenia – uprawnienia organizatora, edycja, usuwanie",
+        "exports": "window.EventDetailsManager"
+      },
+      {
+        "file": "js/event-themes.js",
+        "purpose": "System kategorii/motywów wydarzeń (np. BBQ, urodziny, koncert)",
+        "exports": "window.EventThemes"
+      }
+    ],
+    "uiComponents": [
+      {
+        "file": "js/navigation.js",
+        "lines": 244,
+        "purpose": "Pasek nawigacji dolnej – aktywne stany, przełączanie widoków",
+        "exports": "window.NavigationManager"
+      },
+      {
+        "file": "js/header.js",
+        "purpose": "Dynamiczny nagłówek strony – tytuł i przyciski akcji",
+        "exports": "window.HeaderManager"
+      },
+      {
+        "file": "js/darkmode.js",
+        "purpose": "Przełącznik motywu ciemnego/jasnego z wykrywaniem preferencji systemowych",
+        "exports": "window.DarkModeManager"
+      },
+      {
+        "file": "js/mobile-fullscreen.js",
+        "lines": 201,
+        "purpose": "Tryb pełnoekranowy na urządzeniach mobilnych gdy aplikacja zainstalowana jako PWA",
+        "exports": "window.MobileFullscreenManager"
+      },
+      {
+        "file": "js/modern-effects.js",
+        "lines": 370,
+        "purpose": "Nowoczesne efekty CSS – animacje, przejścia, efekty wizualne",
+        "exports": "window.ModernEffects"
+      },
+      {
+        "file": "js/lazy-loading.js",
+        "purpose": "Leniwe ładowanie obrazów za pomocą IntersectionObserver",
+        "exports": "window.LazyLoader"
+      },
+      {
+        "file": "js/image-optimizer.js",
+        "purpose": "Kompresja i optymalizacja obrazów",
+        "exports": "window.ImageOptimizer"
+      }
+    ],
+    "system": [
+      {
+        "file": "js/settings.js",
+        "lines": 380,
+        "purpose": "Zarządzanie ustawieniami użytkownika – motyw, język, powiadomienia, eksport danych",
+        "exports": "window.SettingsManager"
+      },
+      {
+        "file": "js/update-checker.js",
+        "lines": 372,
+        "purpose": "Sprawdzanie dostępności aktualizacji aplikacji przez Service Worker",
+        "exports": "window.UpdateChecker"
+      }
+    ]
+  },
+
+  "cssFiles": [
+    {
+      "file": "css/style.css",
+      "lines": 3858,
+      "purpose": "Główny arkusz stylów – komponenty, układ, przyciski, karty wydarzeń, formularze"
+    },
+    {
+      "file": "css/responsive.css",
+      "lines": 374,
+      "purpose": "Responsywny design – media queries, mobile-first breakpoints"
+    },
+    {
+      "file": "css/dark-mode.css",
+      "lines": 247,
+      "purpose": "Style motywu ciemnego z użyciem zmiennych CSS"
+    },
+    {
+      "file": "css/critical.css",
+      "lines": 40,
+      "purpose": "Krytyczny CSS inline – style powyżej linii złożenia (above-the-fold)"
+    },
+    {
+      "file": "css/modern-effects.css",
+      "purpose": "Animacje i efekty nowoczesne (w trakcie rozwoju)"
+    },
+    {
+      "file": "css/standalone.css",
+      "purpose": "Style specyficzne dla trybu standalone (zainstalowana PWA)"
+    },
+    {
+      "file": "css/overrides.css",
+      "lines": 12,
+      "purpose": "Małe poprawki i nadpisania CSS"
+    }
+  ],
+
+  "pages": [
+    {
+      "file": "index.html",
+      "route": "/",
+      "title": "Strona Główna – Lista Wydarzeń",
+      "description": "Wyświetla wszystkie wydarzenia jako karty z wyszukiwarką i filtrami",
+      "features": [
+        "Lista wydarzeń w widoku kart (grid)",
+        "Wyszukiwanie w czasie rzeczywistym",
+        "Filtrowanie: nadchodzące/przeszłe, motyw, kolejność",
+        "Tryby widoku: Wszystkie / Moje / Uczestniczę / Ulubione",
+        "Stały dolny pasek nawigacji"
+      ],
+      "scripts": [
+        "js/config.js", "js/i18n.js", "js/storage.js", "js/events.js",
+        "js/api-client.js", "js/data-adapter.js", "js/auth.js", "js/network.js",
+        "js/navigation.js", "js/header.js", "js/darkmode.js", "js/notifications.js",
+        "js/lazy-loading.js", "js/modern-effects.js", "js/update-checker.js", "js/main.js"
+      ]
+    },
+    {
+      "file": "create-event.html",
+      "route": "/create-event.html",
+      "title": "Tworzenie/Edycja Wydarzenia",
+      "description": "Wielosekcyjny formularz z walidacją w czasie rzeczywistym",
+      "sections": [
+        "Podstawowe informacje: tytuł, opis",
+        "Data i godzina: od/do z selektorem",
+        "Lokalizacja z interaktywną mapą i geolokalizacją",
+        "Udogodnienia: jedzenie, napoje, parking, zwierzęta",
+        "Pojemność i cennik",
+        "Przesyłanie zdjęć"
+      ],
+      "scripts": [
+        "js/config.js", "js/i18n.js", "js/storage.js", "js/events.js",
+        "js/api-client.js", "js/data-adapter.js", "js/auth.js", "js/geolocation.js",
+        "js/navigation.js", "js/header.js", "js/darkmode.js", "js/create-event.js",
+        "js/modern-effects.js", "js/event-themes.js", "js/image-optimizer.js", "js/main.js"
+      ]
+    },
+    {
+      "file": "event-details.html",
+      "route": "/event-details.html?id=EVENT_ID",
+      "title": "Szczegóły Wydarzenia",
+      "description": "Pełne informacje o wydarzeniu z mapą, QR kodem i opcjami zarządzania",
+      "features": [
+        "Nagłówek z datą i motywem",
+        "Opis i wszystkie szczegóły",
+        "Interaktywna mapa z markerem lokalizacji",
+        "Dane organizatora z kontrolą uprawnień",
+        "Przyciski edycji/usunięcia (tylko dla organizatora)",
+        "Udostępnianie przez kod QR",
+        "Eksport do kalendarza (iCalendar .ics)",
+        "Zapis do ulubionych"
+      ],
+      "scripts": [
+        "js/config.js", "js/i18n.js", "js/storage.js", "js/events.js",
+        "js/api-client.js", "js/data-adapter.js", "js/auth.js", "js/geolocation.js",
+        "js/qr.js", "js/ics-export.js", "js/navigation.js", "js/header.js",
+        "js/darkmode.js", "js/notifications.js", "js/event-details.js",
+        "js/modern-effects.js", "js/main.js"
+      ]
+    },
+    {
+      "file": "auth.html",
+      "route": "/auth.html",
+      "title": "Logowanie i Rejestracja",
+      "description": "Uwierzytelnianie użytkownika z obsługą JWT",
+      "features": [
+        "Zakładka logowania (email + hasło)",
+        "Zakładka rejestracji (pełny formularz)",
+        "Walidacja i potwierdzenie hasła",
+        "Obsługa tokenów JWT",
+        "Komunikaty błędów"
+      ]
+    },
+    {
+      "file": "settings.html",
+      "route": "/settings.html",
+      "title": "Ustawienia Aplikacji",
+      "description": "Preferencje użytkownika i zarządzanie aplikacją",
+      "features": [
+        "Wybór motywu: jasny / ciemny / systemowy",
+        "Wybór języka: polski / angielski",
+        "Ustawienia powiadomień i czas wyprzedzenia",
+        "Zarządzanie cache",
+        "Eksport i import danych",
+        "Ładowanie przykładowych danych",
+        "Ustawienia konta"
+      ]
+    },
+    {
+      "file": "clear-cache.html",
+      "route": "/clear-cache.html",
+      "title": "Czyszczenie Cache",
+      "description": "Narzędzie deweloperskie do czyszczenia cache Service Workera i lokalnych danych"
+    }
+  ],
+
+  "dataModel": {
+    "eventObject": {
+      "description": "Struktura obiektu wydarzenia przechowywana w localStorage",
+      "fields": {
+        "id": "string – unikalny identyfikator (format: event_<timestamp>_<random>)",
+        "title": "string – nazwa wydarzenia",
+        "description": "string – opis wydarzenia",
+        "startDate": "string – data rozpoczęcia (YYYY-MM-DD)",
+        "startTime": "string – godzina rozpoczęcia (HH:MM)",
+        "endDate": "string | null – data zakończenia (YYYY-MM-DD)",
+        "endTime": "string | null – godzina zakończenia (HH:MM)",
+        "location": "string – nazwa miejsca",
+        "coordinates": "{ lat: number, lng: number } | null – współrzędne GPS",
+        "organizerId": "string – email/ID organizatora",
+        "organizerName": "string – imię i nazwisko organizatora",
+        "createdAt": "string – data utworzenia (ISO 8601)",
+        "updatedAt": "string – data ostatniej edycji (ISO 8601)",
+        "theme": "string – kategoria (np. BBQ, urodziny, koncert)",
+        "maxParticipants": "number | null – maksymalna liczba uczestników",
+        "isPaid": "boolean – czy wydarzenie płatne",
+        "price": "number – cena wejścia",
+        "currency": "string – waluta (domyślnie PLN)",
+        "food": "boolean – czy jest jedzenie",
+        "drinks": "boolean – czy są napoje",
+        "accommodation": "boolean – czy jest nocleg",
+        "parking": "boolean – czy jest parking",
+        "pets": "boolean – czy dozwolone zwierzęta",
+        "images": "string[] – zdjęcia (base64 lub URL)",
+        "qrCode": "string | null – wygenerowany kod QR (base64 PNG)",
+        "invitationCode": "string | null – kod zaproszenia do udostępniania",
+        "isFavorite": "boolean – czy oznaczone jako ulubione",
+        "synced": "boolean – czy zsynchronizowane z backendem",
+        "lastSyncError": "string | null – ostatni błąd synchronizacji"
+      }
+    },
+    "backendEventFormat": {
+      "description": "Format danych przesyłanych do/z API backendu (snake_case)",
+      "fields": {
+        "id": "integer",
+        "title": "string",
+        "description": "string",
+        "start_date": "string (ISO 8601 datetime)",
+        "end_date": "string (ISO 8601 datetime) | null",
+        "location_name": "string",
+        "latitude": "number | null",
+        "longitude": "number | null",
+        "organizer_id": "integer",
+        "max_participants": "integer | null",
+        "theme": "string",
+        "is_paid": "boolean",
+        "price": "number",
+        "currency": "string",
+        "accommodation_available": "boolean",
+        "is_public": "boolean",
+        "created_at": "string (ISO 8601)",
+        "updated_at": "string (ISO 8601)"
+      }
+    },
+    "localStorageKeys": {
+      "fete-lite-events": "JSON array – lista wszystkich wydarzeń",
+      "fete-lite-settings": "JSON object – ustawienia użytkownika",
+      "fete-lite-offline-queue": "JSON array – kolejka operacji oczekujących na synchronizację",
+      "fete-lite-language": "string – kod języka (pl/en)",
+      "access_token": "string – JWT access token",
+      "refresh_token": "string – JWT refresh token",
+      "notificationSettings": "JSON object – ustawienia powiadomień"
+    }
+  },
+
+  "backendAPI": {
+    "baseUrl": "https://fetebackend-production.up.railway.app/",
+    "version": "v1",
+    "authentication": "Bearer Token (JWT)",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "description": "Logowanie użytkownika",
+        "body": { "email": "string", "password": "string" },
+        "returns": "{ access_token, refresh_token, user }"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/auth/register",
+        "description": "Rejestracja nowego użytkownika",
+        "body": { "email": "string", "password": "string", "name": "string" },
+        "returns": "{ access_token, refresh_token, user }"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/auth/refresh",
+        "description": "Odświeżenie tokenu JWT",
+        "body": { "refresh_token": "string" },
+        "returns": "{ access_token }"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/events",
+        "description": "Pobierz wszystkie publiczne wydarzenia",
+        "auth": "opcjonalne",
+        "returns": "array of event objects"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/events/:id",
+        "description": "Pobierz szczegóły konkretnego wydarzenia",
+        "auth": "opcjonalne",
+        "returns": "event object"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/events",
+        "description": "Utwórz nowe wydarzenie",
+        "auth": "wymagane",
+        "body": "event object (snake_case)",
+        "returns": "created event object"
+      },
+      {
+        "method": "PUT",
+        "path": "/api/v1/events/:id",
+        "description": "Zaktualizuj wydarzenie (tylko organizator)",
+        "auth": "wymagane",
+        "body": "partial event object",
+        "returns": "updated event object"
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/v1/events/:id",
+        "description": "Usuń wydarzenie (tylko organizator)",
+        "auth": "wymagane",
+        "returns": "{ success: true }"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/events/:id/register",
+        "description": "Zapisz się na wydarzenie",
+        "auth": "wymagane",
+        "returns": "{ success: true }"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/users/:id/events",
+        "description": "Pobierz wydarzenia danego użytkownika",
+        "auth": "wymagane",
+        "returns": "array of event objects"
+      }
+    ]
+  },
+
+  "pwaConfiguration": {
+    "manifestFile": "manifest.json",
+    "serviceWorkerFile": "service-worker.js",
+    "appName": "Fete Lite - Organizuj Wydarzenia",
+    "shortName": "Fete Lite",
+    "display": "standalone",
+    "themeColor": "#673ab7",
+    "backgroundColor": "#ffffff",
+    "startUrl": "./",
+    "orientation": "portrait-primary",
+    "icons": [
+      { "src": "./images/icons/icon-192.png", "sizes": "192x192", "purpose": "any" },
+      { "src": "./images/icons/icon-512.png", "sizes": "512x512", "purpose": "any" },
+      { "src": "./images/icons/maskable-icon.png", "sizes": "512x512", "purpose": "maskable" }
+    ],
+    "shortcuts": [
+      {
+        "name": "Nowe wydarzenie",
+        "url": "/create-event.html",
+        "description": "Utwórz nowe wydarzenie"
+      }
+    ],
+    "protocolHandlers": [
+      { "protocol": "web+fete", "url": "/?share=%s" }
+    ],
+    "fileHandlers": [
+      {
+        "action": "/",
+        "accept": { "text/calendar": [".ics"], "application/json": [".json"] }
+      }
+    ],
+    "categories": ["productivity", "lifestyle", "social"],
+    "cacheStrategies": {
+      "staticAssets": "Cache-First – HTML, CSS, JS, obrazy",
+      "apiCalls": "Network-First z fallbackiem na cache",
+      "images": "Stale-While-Revalidate",
+      "cacheVersioning": "Automatyczne czyszczenie starych wersji cache"
+    }
+  },
+
+  "offlineSupport": {
+    "description": "Aplikacja działa w pełni offline dzięki Service Workerowi i localStorage",
+    "mechanism": [
+      "Service Worker cachuje wszystkie pliki statyczne przy pierwszym załadowaniu",
+      "Dane wydarzeń przechowywane są w localStorage",
+      "Operacje CRUD gdy offline trafiają do offline queue",
+      "Po przywróceniu połączenia NetworkManager automatycznie synchronizuje kolejkę z backendem",
+      "Użytkownik widzi wskaźnik stanu połączenia w UI"
+    ]
+  },
+
+  "authenticationFlow": {
+    "description": "Uwierzytelnianie oparte na JWT z automatycznym odświeżaniem tokenu",
+    "steps": [
+      "Użytkownik wypełnia formularz logowania na auth.html",
+      "ApiClient wysyła POST /api/v1/auth/login",
+      "Backend zwraca access_token i refresh_token",
+      "Tokeny są zapisywane w localStorage",
+      "Przy każdym żądaniu ApiClient dołącza nagłówek Authorization: Bearer <access_token>",
+      "Gdy access_token wygaśnie (kod 401), ApiClient automatycznie wysyła POST /api/v1/auth/refresh",
+      "Nowy access_token jest zapisywany i oryginalne żądanie jest ponowione"
+    ],
+    "tokenStorage": {
+      "accessToken": "localStorage['access_token']",
+      "refreshToken": "localStorage['refresh_token']"
+    }
+  },
+
+  "internationalization": {
+    "description": "Aplikacja obsługuje język polski i angielski",
+    "module": "js/i18n.js",
+    "defaultLanguage": "pl",
+    "supportedLanguages": ["pl", "en"],
+    "detection": "Automatyczne wykrywanie języka przeglądarki, nadpisane przez ustawienie w localStorage['fete-lite-language']",
+    "usage": "i18n.t('key') zwraca przetłumaczony tekst"
+  },
+
+  "notifications": {
+    "description": "System powiadomień push dla przypomnień o wydarzeniach",
+    "module": "js/notifications.js",
+    "permissionHandling": "Prosi o uprawnienie przy pierwszym użyciu",
+    "scheduling": "Powiadomienia planowane są przed wydarzeniem w konfigurowalne czasy",
+    "defaultOffsets": ["15 min wcześniej", "1 godzina wcześniej", "1 dzień wcześniej"]
+  },
+
+  "maps": {
+    "description": "Interaktywne mapy z Leaflet.js i OpenStreetMap (bezpłatna alternatywa dla Google Maps)",
+    "module": "js/geolocation.js",
+    "library": "Leaflet.js 1.9.4 – leniwe ładowanie",
+    "tileServer": "OpenStreetMap (https://tile.openstreetmap.org/)",
+    "geocoding": "Nominatim API – zamiana adresów na współrzędne",
+    "features": [
+      "Wyświetlanie mapy z markerem na stronie szczegółów",
+      "Interaktywne umieszczanie markera przy tworzeniu wydarzenia",
+      "Geolokalizacja użytkownika",
+      "Geocoding – wyszukiwanie adresu"
+    ]
+  },
+
+  "qrCodes": {
+    "description": "Generowanie kodów QR do udostępniania wydarzeń",
+    "module": "js/qr.js",
+    "library": "QRCode.js 1.5.3",
+    "fallbackChain": [
+      "cdn.jsdelivr.net",
+      "unpkg.com",
+      "Lokalny plik js/qrcode.min.js"
+    ],
+    "content": "URL strony szczegółów wydarzenia z parametrem id"
+  },
+
+  "calendarExport": {
+    "description": "Eksport wydarzeń do formatu iCalendar (.ics)",
+    "module": "js/ics-export.js",
+    "format": "iCalendar RFC 5545",
+    "compatibleApps": ["Google Calendar", "Microsoft Outlook", "Apple Calendar"],
+    "fields": ["DTSTART", "DTEND", "SUMMARY", "DESCRIPTION", "LOCATION", "GEO"]
+  },
+
+  "dataFlow": {
+    "createEvent": [
+      "1. Użytkownik wypełnia formularz na create-event.html",
+      "2. create-event.js waliduje dane",
+      "3. Jeśli online: DataAdapter konwertuje dane → ApiClient wysyła POST /api/v1/events",
+      "4. Jeśli offline: Operacja trafia do offline queue w localStorage",
+      "5. Storage.js zapisuje wydarzenie lokalnie z flagą synced: false/true",
+      "6. Po sukcesie użytkownik trafia na index.html"
+    ],
+    "viewEvents": [
+      "1. index.html ładuje się",
+      "2. main.js inicjalizuje wszystkie moduły",
+      "3. EventManager pobiera wydarzenia: najpierw z localStorage, potem z API (jeśli online)",
+      "4. NetworkManager monitoruje połączenie",
+      "5. Jeśli online: pobiera zdalne wydarzenie i synchronizuje z lokalnymi",
+      "6. Lista wyświetlana w widoku kart"
+    ],
+    "syncQueue": [
+      "1. NetworkManager słucha zdarzenia 'online'",
+      "2. Gdy połączenie przywrócone – pobiera offline queue z localStorage",
+      "3. Dla każdej operacji w kolejce – wysyła do API",
+      "4. Po sukcesie – usuwa operację z kolejki i aktualizuje flagę synced"
+    ]
+  },
+
+  "devEnvironment": {
+    "startServer": {
+      "bash": "./start-dev-server.sh",
+      "powershell": "./start-dev-server.ps1"
+    },
+    "noPackageManager": "Projekt nie używa npm/yarn – brak package.json",
+    "noBuildStep": "Brak procesu budowania – pliki serwowane bezpośrednio jako statyczne",
+    "testFiles": [
+      {
+        "file": "test-integration.js",
+        "description": "Testy integracyjne API – testuje endpointy backendu"
+      },
+      {
+        "file": "test-qr.html",
+        "description": "Interaktywna strona do testowania generowania QR kodów"
+      },
+      {
+        "file": "test-search.html",
+        "description": "Interaktywna strona do testowania wyszukiwania"
+      }
+    ]
+  },
+
+  "keyConventions": {
+    "moduleExports": "Każdy moduł JS eksportuje klasę/obiekt przez window.ClassName (globalne)",
+    "naming": {
+      "frontend": "camelCase (JavaScript), kebab-case (CSS klasy, pliki HTML/CSS)",
+      "backend": "snake_case (pola API)"
+    },
+    "dataConversion": "DataAdapter (js/data-adapter.js) obsługuje wszystkie konwersje camelCase ↔ snake_case",
+    "errorHandling": "Błędy API wyświetlane jako toast powiadomienia w UI",
+    "offlineFirst": "Aplikacja zawsze najpierw zapisuje lokalnie, potem synchronizuje z backendem"
+  },
+
+  "securityNotes": [
+    "JWT access_token i refresh_token przechowywane w localStorage (nie HttpOnly cookies)",
+    "Brak CSRF protection – aplikacja SPA z JWT",
+    "Walidacja danych po stronie frontendu przed wysłaniem do API",
+    "API backend obsługuje własną walidację i autentykację"
+  ]
+}
